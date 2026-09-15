@@ -75,7 +75,7 @@ of the PDF above measures 210.00 × 297.00 mm, because that is what A4 is.
 | Module | What it adds | What it needs |
 |---|---|---|
 | `print` | everything above | nothing — always on |
-| `ai` | clean up screenshots, convert, combine, generate | an OpenRouter key (paid per image) |
+| `ai` | clean up screenshots, convert, combine, generate | a key for an images API (paid per image) |
 | `delivery` | push finished files to an SFTP/FTPS server you already have | that server |
 | `mirror` | a second copy of every result, sorted by month | a second target |
 | `share` | public links: expiring, revocable, optional passphrase, ZIP download | a public URL |
@@ -91,6 +91,17 @@ KLARBILD_MODULES=all              # everything
 A module that is off is off: no navigation entry, no settings card, and its API
 routes answer 404 rather than 403 — a disabled instance does not advertise what it
 could have done.
+
+![The studio with the AI module on: four tasks, saved presets, exact output size](docs/screenshots/studio.png)
+
+### Which image model
+
+The `ai` module posts to `{IMAGE_API_BASE_URL}/images` in the OpenAI image shape.
+The default base is OpenRouter — one key, many models, and the model list in the
+admin area fills itself in. Point `IMAGE_API_BASE_URL` at a LiteLLM gateway, a
+company proxy or a server of your own and Klarbild talks to that instead; you then
+type the model id rather than picking it from a list. Either way the pictures go to
+exactly one endpoint and you chose which.
 
 ## Why self-hosted matters here
 

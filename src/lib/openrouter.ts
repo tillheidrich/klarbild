@@ -1,16 +1,36 @@
 import { one } from './db';
 import { decrypt } from './crypto';
 
-const BASE = 'https://openrouter.ai/api/v1';
+/**
+ * Where the image requests go.
+ *
+ * OpenRouter by default, because it is one key for many models. Point
+ * `IMAGE_API_BASE_URL` somewhere else and Klarbild talks to that instead — any
+ * endpoint that answers `POST {base}/images` in the OpenAI image shape will do,
+ * which covers a gateway like LiteLLM, a company proxy, or a local server. The
+ * request body is written to that shape deliberately; the only OpenRouter
+ * extras are the `X-Title` header and the `usage.cost` field, and both are
+ * optional on the way back.
+ *
+ * Whatever you point it at, the images go to exactly one place and you chose it.
+ */
+const BASE = (process.env.IMAGE_API_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/+$/, '');
 
-/** Key: the DB value (set in the admin area) takes precedence over the environment variable. */
+/** True when this instance talks to OpenRouter rather than to something else. */
+export const usingOpenRouter = BASE.includes('openrouter.ai');
+
+/**
+ * Key: the value from the admin area wins, then `IMAGE_API_KEY`, then
+ * `OPENROUTER_API_KEY` — the last one so that instances set up before the base
+ * URL became configurable keep working untouched.
+ */
 export async function resolveKey(): Promise<string> {
   const row = await one<{ openrouter_key_enc: string | null }>(
     'SELECT openrouter_key_enc FROM settings WHERE id=1');
   if (row?.openrouter_key_enc) {
     try { return decrypt(row.openrouter_key_enc); } catch { /* falls back to ENV */ }
   }
-  return process.env.OPENROUTER_API_KEY || '';
+  return process.env.IMAGE_API_KEY || process.env.OPENROUTER_API_KEY || '';
 }
 
 export class OpenRouterError extends Error {
@@ -49,7 +69,7 @@ export interface GenerateResult {
 /** The dedicated image endpoint POST /api/v1/images (not chat/completions). */
 export async function generateImage(opts: GenerateOpts): Promise<GenerateResult> {
   const key = await resolveKey();
-  if (!key) throw new OpenRouterError(401, friendlyFor(401), 'No OpenRouter key stored');
+  if (!key) throw new OpenRouterError(401, friendlyFor(401), 'No API key stored for the image service');
 
   const body: Record<string, unknown> = {
     model: opts.model,
@@ -69,6 +89,7 @@ export async function generateImage(opts: GenerateOpts): Promise<GenerateResult>
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      // OpenRouter shows this on the activity page. Other endpoints ignore it.
       'X-Title': 'Klarbild',
     },
     body: JSON.stringify(body),
@@ -76,7 +97,7 @@ export async function generateImage(opts: GenerateOpts): Promise<GenerateResult>
 
   if (!res.ok) {
     throw new OpenRouterError(res.status, friendlyFor(res.status),
-      `OpenRouter ${res.status}: ${await res.text().catch(() => '')}`.slice(0, 300));
+      `Image API ${res.status}: ${await res.text().catch(() => '')}`.slice(0, 300));
   }
 
   const json: any = await res.json();
@@ -90,12 +111,20 @@ export async function generateImage(opts: GenerateOpts): Promise<GenerateResult>
   };
 }
 
-/** The available image models (for the model list in the admin area). */
+/**
+ * The available image models, for the picker in the admin area.
+ *
+ * `GET {base}/images/models` is an OpenRouter route. An endpoint that does not
+ * have it answers 404, and that is not an error worth showing: it only means
+ * the list cannot be filled in automatically, and the model id has to be typed.
+ * Anything else — a wrong key, a dead host — is still reported.
+ */
 export async function listImageModels(): Promise<any[]> {
   const key = await resolveKey();
   const res = await fetch(`${BASE}/images/models`, {
     headers: { Authorization: `Bearer ${key}` },
   });
+  if (res.status === 404 && !usingOpenRouter) return [];
   if (!res.ok) throw new OpenRouterError(res.status, friendlyFor(res.status));
   return (await res.json())?.data ?? [];
 }

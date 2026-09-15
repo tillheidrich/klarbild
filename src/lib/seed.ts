@@ -81,15 +81,19 @@ async function seedRecipes(): Promise<void> {
   const by = admin?.id ?? null;
   const R = (name: string, tasks: string[], fmt: string, orient: string, extra: Record<string, unknown> = {}) =>
     query(
-      `INSERT INTO recipes (name, tasks, output_format, orientation, crop_mode, dpi, delivery, is_default, created_by, contour_mm)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      `INSERT INTO recipes (name, tasks, output_format, orientation, crop_mode, dpi, delivery, is_default, created_by, contour_mm, output_ext)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [name, JSON.stringify(tasks), fmt, orient, (extra.crop_mode as string) || 'crop', 300,
-       (extra.delivery as string) || 'library', !!extra.is_default, by, (extra.contour_mm as number) ?? null]);
+       (extra.delivery as string) || 'library', !!extra.is_default, by, (extra.contour_mm as number) ?? null,
+       (extra.output_ext as string) ?? null]);
 
+  // Examples, meant to be read and then replaced. Each one shows a different
+  // combination of the four tasks rather than a different size.
   await R('Clean up only', ['clean'], 'keep', 'landscape', { is_default: true });
   await R('Poster 30×40', ['clean', 'format'], '30x40', 'portrait');
-  await R('TV frame (16:9)', ['clean', 'format'], 'tv169', 'landscape');
+  await R('Cut out, transparent PNG', ['clean', 'cutout'], 'keep', 'landscape', { output_ext: 'png' });
   await R('Sticker 5 cm', ['clean', 'cutout', 'format', 'contour'], 'sticker5', 'landscape', { contour_mm: 3 });
+  await R('Square 30 × 30 for social', ['clean', 'format'], '30x30', 'landscape');
 }
 
 /* --------------------------------------------------------- print presets */
