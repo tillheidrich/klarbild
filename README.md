@@ -16,6 +16,10 @@ Telegram bot. **All of that is optional.** The default install is the print stud
 a database, and nothing else — no API key, no model, no object store, no account
 anywhere.
 
+**[Lay out a sheet in your browser →](https://klarbild-demo.heidrich-digital.de)** — the demo
+page runs this repository's own layout engine client-side and hands you the PDF. No account,
+nothing uploaded.
+
 ```bash
 git clone https://github.com/tillheidrich/klarbild.git && cd klarbild
 cp .env.example .env          # fill in three secrets, the file says which
@@ -143,6 +147,9 @@ can lay out and fetch a print sheet directly — `exact_size` and `print_sheet` 
 the two tools worth knowing.
 
 ## Contributing
+
+[klarbild-demo.heidrich-digital.de](https://klarbild-demo.heidrich-digital.de) is the product
+page; its source is [klarbild-demo](https://git.heidrich-digital.de/till/klarbild-demo).
 
 Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for
 how the code is laid out and what the house style is. Security reports go to the
