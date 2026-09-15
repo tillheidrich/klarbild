@@ -46,7 +46,7 @@ world such a module does not exist.
 
 ## Formats (output_format)
 - Fixed keys: 9x13,10x15,13x18,15x20,20x30,30x40,30x45,40x50,40x60,50x70,60x90,
-  A4,A3,A2,20x20,30x30, theframe (3840x2160), portrait916 (2160x3840), keep (keep the original).
+  A4,A3,A2,20x20,30x30, tv169 (3840x2160), portrait916 (2160x3840), keep (keep the original).
 - Custom sizes without a preset: \`WIDTHxHEIGHT\` in cm (e.g. \`25x35\`) or \`sticker<N>\`
   for N×N cm (e.g. \`sticker5\` = 5×5 cm). Limit 300 cm. Exact pixels: round(cm/2.54*dpi).
 - File format (output_ext): \`png\` (lossless, transparency) or \`jpg\` (small, easy on the
@@ -81,7 +81,7 @@ Purely local geometry: cropping (sharp) plus PDF (pdf-lib). No model, no cost.
   S9x13,S10x15,S11x15,S12x15,S13x18,S15x20,S18x24,S20x25,S20x30,S24x30 ·
   R30x40,R30x45,R40x50,R40x60,R50x70,R60x80,R60x90,R70x100 (poster and frame) ·
   Q10x10,Q13x13,Q20x20,Q30x30 · DA6,DA5,DA4,DA3,DA2 ·
-  W16x9,W9x16,W3x2,W4x3,W5x4 (aspect ratios as a print size, The Frame among them).
+  W16x9,W9x16,W3x2,W4x3,W5x4 (aspect ratios as a print size, a 16:9 TV frame among them).
   So every format the AI generation offers (src/lib/format.ts) can be printed here too.
 - If the image does not match the size (fit, per cell): \`cover\` = crop until it is filled (the default,
   nothing stays empty, something is lost at the edges) or \`contain\` = letterbox the whole image, the
@@ -178,7 +178,7 @@ Results carry IPTC \`DigitalSourceType\` as XMP inside the file:
 Readable with exiftool. The print module creates nothing with AI and therefore labels nothing.
 
 ## File names of the results
-Scheme: \`YYYY-MM-DD_HHMMSS_<motif>_<format>_<short id>.<ext>\` — e.g. \`2026-08-20_143207_team-badge_the-frame_a3f9.jpg\`.
+Scheme: \`YYYY-MM-DD_HHMMSS_<motif>_<format>_<short id>.<ext>\` — e.g. \`2026-08-20_143207_team-badge_tv169_a3f9.jpg\`.
 - The timestamp comes first, so any file listing (the delivery target, the backup mirror, a file
   manager) sorts chronologically by itself.
 - The four-character short id comes from the item id. That way two images are **never** named the
@@ -195,7 +195,7 @@ Scheme: \`YYYY-MM-DD_HHMMSS_<motif>_<format>_<short id>.<ext>\` — e.g. \`2026-
 ## Delivery
 - A delivery target is an SFTP/FTPS server; the folder on the target is a subfolder under the base path.
   The full path is base folder + folder (only assembled when delivering). The default folder is
-  "Gallery A"; "The Frame" → "TheFrame-Backgrounds".
+  "Gallery A"; "TV 16:9" → "TV-Backgrounds".
 - What is delivered is the result in the chosen file format (output_ext, global or per job) — PNG or
   JPG. Cut-out motifs stay PNG.
 - An optional .md metadata sidecar file can be switched on per target (delivery target, backup mirror,

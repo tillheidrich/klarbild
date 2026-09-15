@@ -21,8 +21,8 @@ const dict = dictFor(locale);
       <ol>
         <li set:html={t('Choose <b>Edit</b> at the top of the <b>studio</b>.')} />
         <li>{t('Upload screenshots — drag them in, paste with ⌘/Ctrl + V or tap (up to 100 at once).')}</li>
-        <li set:html={t('Choose what should happen: <b>Clean up</b> (frame, wall, shop interface gone), <b>Cut out</b> (subject free, background transparent), <b>Format</b> (30 × 40 cm or The Frame, for instance), <b>Contour</b> (white sticker edge).')} />
-        <li set:html={t('For the format, choose “<b>Crop</b>” or “<b>Extend</b>” — extending generates more scene around the subject (outpainting), which is ideal for The Frame.')} />
+        <li set:html={t('Choose what should happen: <b>Clean up</b> (frame, wall, shop interface gone), <b>Cut out</b> (subject free, background transparent), <b>Format</b> (30 × 40 cm or a 16:9 TV frame, for instance), <b>Contour</b> (white sticker edge).')} />
+        <li set:html={t('For the format, choose “<b>Crop</b>” or “<b>Extend</b>” — extending generates more scene around the subject (outpainting), which is ideal for a wide TV frame.')} />
         <li set:html={t('Choose the <b>quality</b> and where it goes (<b>library</b>, <b>delivery target</b> or both), then <b>Start</b>.')} />
       </ol>
     </section>
@@ -55,7 +55,7 @@ const dict = dictFor(locale);
       <p class="lead" set:html={t('The <b>Print</b> tab is the photo-lab part of Klarbild: no model, no cost, no waiting. Only cropping, scaling and geometry — from the biometric passport photo to the 30 × 40 poster.')} />
       <ol>
         <li set:html={t('Upload images (drag them in, ⌘/Ctrl + V) — or <b>Choose from the library</b>: everything Klarbild has already produced, with search, by folder and several at once. No more detour through another upload.')} />
-        <li set:html={t('Choose the <b>final size</b> for each image. <b>Every format from AI generation</b> is here — biometric passport photo 35 × 45 mm, 2 × 3 to 6 × 9 cm, 9 × 13 to 24 × 30, poster and frame sizes 30 × 40 to 70 × 100, squares, DIN A6–A2 and the aspect ratios (16:9 “The Frame”, 9:16, 3:2, 4:3, 5:4) — or a <b>custom size</b>: <code>12x15</code> (cm), <code>35x45mm</code>, <code>5</code> (= 5 × 5 cm) or <code>4:3/15</code> (ratio 4:3, longer edge 15 cm).')} />
+        <li set:html={t('Choose the <b>final size</b> for each image. <b>Every format from AI generation</b> is here — biometric passport photo 35 × 45 mm, 2 × 3 to 6 × 9 cm, 9 × 13 to 24 × 30, poster and frame sizes 30 × 40 to 70 × 100, squares, DIN A6–A2 and the aspect ratios (16:9 TV, 9:16, 3:2, 4:3, 5:4) — or a <b>custom size</b>: <code>12x15</code> (cm), <code>35x45mm</code>, <code>5</code> (= 5 × 5 cm) or <code>4:3/15</code> (ratio 4:3, longer edge 15 cm).')} />
         <li set:html={t('<b>If the image does not fit the format</b>, you decide for each image: <b>Crop</b> (the format is filled, something is missing at the edges — the default) or <b>Letterbox</b> (the whole image stays visible, with the <b>border colour</b> around it — white, black, paper-coloured or freely chosen). <b>Nothing is ever distorted.</b>')} />
         <li set:html={t('Tap the preview image → <b>Crop</b>: pan and zoom. The aspect ratio stays locked to the target format, and nothing is ever distorted.')} />
         <li set:html={t('Set the <b>quantity</b> per image — that is how the passport-photo or school photo set comes about.')} />

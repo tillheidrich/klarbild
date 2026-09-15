@@ -16,7 +16,7 @@ const CM: Record<string, [number, number]> = {
 
 // Pure screen sizes (fixed pixels, no cm/dpi)
 const SCREEN: Record<string, [number, number]> = {
-  theframe: [3840, 2160],   // 16:9 landscape
+  tv169: [3840, 2160],   // 16:9 landscape
   portrait916: [2160, 3840], // 9:16 portrait
 };
 
@@ -39,7 +39,7 @@ export function resolveDimensions(input: ResolveInput): Dimensions | null {
 
   if (format in SCREEN) {
     const [w, h] = SCREEN[format];
-    return { w, h, label: format === 'theframe' ? 'The Frame' : 'Portrait' };
+    return { w, h, label: format === 'tv169' ? 'TV 16:9' : 'Portrait' };
   }
 
   let cm: [number, number] | undefined;

@@ -5,7 +5,7 @@ import { one } from './lib/db';
 import { LOCALE_COOKIE, resolveLocale, isLocale } from './lib/i18n';
 
 const PUBLIC_PATHS = [
-  /^\/login/, /^\/tour/, /^\/api\/auth\/login/, /^\/api\/health/, /^\/g\//,
+  /^\/login/, /^\/tour/, /^\/api\/auth\/login/, /^\/api\/health/,
   /^\/api\/telegram\/webhook/, /^\/llms\.txt/,
   // Forgot password — must be reachable without being signed in, otherwise it's pointless.
   /^\/password/, /^\/api\/auth\/reset/,

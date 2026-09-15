@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 WORKDIR /app
 ENV NODE_ENV=production PORT=4321 HOST=0.0.0.0
@@ -8,8 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 make g++ ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package.json ./
-RUN npm install --no-audit --no-fund
+# The lockfile comes first and `npm ci` honours it, so the image is built from
+# the exact versions CI tested — not from whatever `^` resolved to today.
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
 COPY . .
 RUN npm run build

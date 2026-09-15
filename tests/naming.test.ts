@@ -8,11 +8,11 @@ const ID2 = '77b21e00-1111-2222-3333-444455556666';
 
 test('The reported bug: two badges on the same day no longer overwrite each other', () => {
   // Same motif, same size, same second — this used to produce the same name twice.
-  const a = buildResultFilename('Portrait Badge.png', 'the-frame', 'jpg', { at: AT, id: ID1 });
-  const b = buildResultFilename('Portrait Badge.png', 'the-frame', 'jpg', { at: AT, id: ID2 });
+  const a = buildResultFilename('Portrait Badge.png', 'tv169', 'jpg', { at: AT, id: ID1 });
+  const b = buildResultFilename('Portrait Badge.png', 'tv169', 'jpg', { at: AT, id: ID2 });
   assert.notEqual(a, b, 'two images must never carry the same name');
-  assert.equal(a, '2026-08-20_143207_portrait-badge_the-frame_a3f9.jpg');
-  assert.equal(b, '2026-08-20_143207_portrait-badge_the-frame_77b2.jpg');
+  assert.equal(a, '2026-08-20_143207_portrait-badge_tv169_a3f9.jpg');
+  assert.equal(b, '2026-08-20_143207_portrait-badge_tv169_77b2.jpg');
 });
 
 test('Names sort lexicographically = chronologically', () => {
@@ -42,12 +42,12 @@ test('Midnight is written as 00, not as 24', () => {
 test('The short id is stable — a second run gives the same name', () => {
   assert.equal(shortTag(ID1), shortTag(ID1));
   assert.equal(shortTag(ID1), 'a3f9');
-  const it = { id: ID1, filename: '2026-07-23_portrait_the-frame.png', created_at: AT };
+  const it = { id: ID1, filename: '2026-07-23_portrait_tv169.png', created_at: AT };
   assert.equal(newNameFor(it), newNameFor(it));
 });
 
 test('Processing an image again does not stack up stamps', () => {
-  const once = buildResultFilename('Portrait Badge.png', 'the-frame', 'jpg', { at: AT, id: ID1 });
+  const once = buildResultFilename('Portrait Badge.png', 'tv169', 'jpg', { at: AT, id: ID1 });
   const twice = buildResultFilename(once, '30x40', 'jpg', { at: AT, id: ID2 });
   assert.equal(twice, '2026-08-20_143207_portrait-badge_30x40_77b2.jpg');
   const thrice = buildResultFilename(twice, 'a4', 'jpg', { at: AT, id: ID1 });
@@ -55,26 +55,26 @@ test('Processing an image again does not stack up stamps', () => {
 });
 
 test('Our own pattern recognises our own names and only those', () => {
-  assert.ok(KLARBILD_NAME.test('2026-08-20_143207_portrait-badge_the-frame_a3f9'));
+  assert.ok(KLARBILD_NAME.test('2026-08-20_143207_portrait-badge_tv169_a3f9'));
   assert.ok(KLARBILD_NAME.test('2026-08-20_143207_portrait_30x40_a3f9-2'));
-  assert.ok(!KLARBILD_NAME.test('2026-07-23_portrait_the-frame'));      // the old scheme
+  assert.ok(!KLARBILD_NAME.test('2026-07-23_portrait_tv169'));      // the old scheme
   assert.ok(!KLARBILD_NAME.test('holiday-2026_beach'));                 // somebody else's name
 });
 
 test('Old names are split up correctly', () => {
-  assert.deepEqual(splitOldName('2026-07-23_portrait_the-frame.png'), { motif: 'portrait', format: 'the-frame', ext: 'png' });
+  assert.deepEqual(splitOldName('2026-07-23_portrait_tv169.png'), { motif: 'portrait', format: 'tv169', ext: 'png' });
   assert.deepEqual(splitOldName('2026-07-23_klarbild_30x40.jpg'), { motif: 'klarbild', format: '30x40', ext: 'jpg' });
   // A foreign file without our scheme: all of it becomes the motif, format "original".
   assert.deepEqual(splitOldName('Holiday Crete.JPEG'), { motif: 'holiday-crete', format: 'original', ext: 'jpeg' });
   // Already in the new scheme: motif and format stay, so that renaming is idempotent.
-  assert.deepEqual(splitOldName('2026-08-20_143207_portrait-badge_the-frame_a3f9.jpg'),
-    { motif: 'portrait-badge', format: 'the-frame', ext: 'jpg' });
+  assert.deepEqual(splitOldName('2026-08-20_143207_portrait-badge_tv169_a3f9.jpg'),
+    { motif: 'portrait-badge', format: 'tv169', ext: 'jpg' });
 });
 
 test('Renaming is idempotent — a second run changes nothing', () => {
-  const old = { id: ID1, filename: '2026-07-23_portrait_the-frame.png', created_at: new Date('2026-07-23T09:15:42Z') };
+  const old = { id: ID1, filename: '2026-07-23_portrait_tv169.png', created_at: new Date('2026-07-23T09:15:42Z') };
   const fresh = newNameFor(old);
-  assert.equal(fresh, '2026-07-23_111542_portrait_the-frame_a3f9.png');
+  assert.equal(fresh, '2026-07-23_111542_portrait_tv169_a3f9.png');
   assert.equal(newNameFor({ ...old, filename: fresh }), fresh, 'the second run has to give the same name');
 });
 
@@ -144,9 +144,9 @@ test('Folder and file names cannot leave the base folder', () => {
 });
 
 test('Real customer folders stay allowed — the check is not there to annoy', () => {
-  const good = ['Gallery A', 'TheFrame-Backgrounds', 'Müller & Söhne (2026)',
+  const good = ['Gallery A', 'TV-Backgrounds', 'Müller & Söhne (2026)',
                 "Wedding O'Brien", 'Daycare 2026_Group 3', 'a.b.c',
-                '2026-08-20_143207_portrait-badge_the-frame_a3f9.jpg'];
+                '2026-08-20_143207_portrait-badge_tv169_a3f9.jpg'];
   for (const g of good) assert.equal(safeSegment(g, 'folder'), g, `wrongly rejected: ${g}`);
 });
 

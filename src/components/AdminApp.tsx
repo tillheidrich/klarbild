@@ -274,7 +274,6 @@ export default function AdminApp({ locale, dict }: { locale?: Locale; dict?: Dic
             <div className="field"><label>{t('Default dpi')}</label><input className="input" type="number" value={s.default_dpi ?? 300} onChange={(e) => field('default_dpi', e.target.value)} /></div>
             <div className="field"><label>{t('Concurrency')}</label><input className="input" type="number" value={s.concurrency ?? 2} onChange={(e) => field('concurrency', e.target.value)} /></div>
           </div>
-          <div className="field"><label>{t('Cricut sheet size (cm)')}</label><input className="input" value={s.cricut_sheet_cm ?? ''} onChange={(e) => field('cricut_sheet_cm', e.target.value)} /></div>
           <div className="field"><label>{t('Default file format')}</label>
             <select className="input" value={s.output_ext ?? 'png'} onChange={(e) => field('output_ext', e.target.value)}>
               <option value="png">{t('PNG (lossless, large)')}</option>
@@ -489,7 +488,7 @@ export default function AdminApp({ locale, dict }: { locale?: Locale; dict?: Dic
             {targets.length === 0 && <div className="hint">{t('No additional targets yet.')}</div>}
           </div>
           <div className="two">
-            <div className="field"><label>{t('Name')}</label><input className="input" placeholder={t('e.g. The Frame FTP')} value={nt.name ?? ''} onChange={(e) => setNt({ ...nt, name: e.target.value })} /></div>
+            <div className="field"><label>{t('Name')}</label><input className="input" placeholder={t('e.g. Studio archive')} value={nt.name ?? ''} onChange={(e) => setNt({ ...nt, name: e.target.value })} /></div>
             <div className="field"><label>{t('Protocol')}</label>
               <select className="input" value={nt.protocol} onChange={(e) => setNt({ ...nt, protocol: e.target.value })}>
                 <option value="sftp">SFTP</option><option value="ftps">FTPS</option></select></div>

@@ -20,7 +20,7 @@ const FORMATS: { id: string; label: string; cm?: [number, number]; screen?: [num
   { id: 'A2', label: 'DIN A2', cm: [42, 59.4] },
   { id: '20x20', label: '20 × 20 cm', cm: [20, 20] },
   { id: '30x30', label: '30 × 30 cm', cm: [30, 30] },
-  { id: 'theframe', label: 'The Frame (16:9)', screen: [3840, 2160] },
+  { id: 'tv169', label: 'TV 16:9', screen: [3840, 2160] },
   { id: 'portrait916', label: 'Portrait (9:16)', screen: [2160, 3840] },
   { id: 'sticker', label: 'Sticker (custom size)', cm: [5, 5] },
   { id: 'custom', label: 'Custom size (cm)' },
@@ -85,7 +85,7 @@ export default function StudioApp({ recipes, locale, dict }: { recipes: any[]; l
   const fmt = FORMATS.find((f) => f.id === format);
   const hasCutout = tasks.includes('cutout');
   const hasFormat = tasks.includes('format');
-  const theframeConflict = hasCutout && (format === 'theframe' || format === 'portrait916');
+  const tvFormatConflict = hasCutout && (format === 'tv169' || format === 'portrait916');
   // In compose/generate the size is always available (without the "Format" task).
   const showFormat = mode === 'each' ? hasFormat : true;
   const wantsFormat = mode === 'each' ? hasFormat : format !== 'keep';
@@ -220,7 +220,7 @@ export default function StudioApp({ recipes, locale, dict }: { recipes: any[]; l
   // "Custom size" needs a valid entry, otherwise the run cannot start.
   const freeFmtInvalid = wantsFormat && format === 'custom' && !parsedFmt.cm;
   const canRun = !busy && !freeFmtInvalid && (
-    mode === 'each' ? (ready.length > 0 && tasks.length > 0 && !theframeConflict && !(tasks.includes('contour') && !hasCutout))
+    mode === 'each' ? (ready.length > 0 && tasks.length > 0 && !tvFormatConflict && !(tasks.includes('contour') && !hasCutout))
     : mode === 'compose' ? (ready.length >= 1 && desc.trim().length > 0)
     : desc.trim().length > 0
   );
@@ -373,7 +373,7 @@ export default function StudioApp({ recipes, locale, dict }: { recipes: any[]; l
                     {freeFmtInvalid && <div className="hint warn">{t('Enter a size, for example “25x35” or “5”.')}</div>}
                   </>
                 )}
-                {theframeConflict && <div className="hint warn">{t('Cut out + The Frame makes no sense — pick one.')}</div>}
+                {tvFormatConflict && <div className="hint warn">{t('Cut out + TV 16:9 makes no sense — pick one.')}</div>}
                 {effCm && (
                   <div className="switch">
                     <button className={portrait ? 'on' : ''} onClick={() => setPortrait(true)}>{t('Portrait')}</button>
@@ -388,7 +388,7 @@ export default function StudioApp({ recipes, locale, dict }: { recipes: any[]; l
                   </div>
                 )}
                 {targetPx && mode !== 'generate' && crop === 'extend' && (
-                  <div className="hint">{t('“Extend” produces more scene around the subject (outpainting) instead of cropping — made for The Frame.')}</div>
+                  <div className="hint">{t('“Extend” produces more scene around the subject (outpainting) instead of cropping — made for wide TV frames.')}</div>
                 )}
               </div>
             )}

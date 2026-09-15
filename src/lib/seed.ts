@@ -85,7 +85,7 @@ async function seedRecipes(): Promise<void> {
 
   await R('Clean up only', ['clean'], 'keep', 'landscape', { is_default: true });
   await R('Poster 30×40', ['clean', 'format'], '30x40', 'portrait');
-  await R('TV frame (16:9)', ['clean', 'format'], 'theframe', 'landscape');
+  await R('TV frame (16:9)', ['clean', 'format'], 'tv169', 'landscape');
   await R('Sticker 5 cm', ['clean', 'cutout', 'format', 'contour'], 'sticker5', 'landscape', { contour_mm: 3 });
 }
 

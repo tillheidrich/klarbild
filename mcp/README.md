@@ -32,7 +32,7 @@ own tools) and then calls the Klarbild tools.
 - **process_images** — upload and process images (local paths or `data:` URLs).
   Give either `recipeId` (a preset) or `mode` (`each`/`compose`/`generate`) + options:
   `tasks` (`clean`/`cutout`/`format`/`contour`), `prompt_text`, `output_format`
-  (fixed, like `30x40`/`theframe`, **or custom**, `25x35` / `sticker5`), `output_ext`
+  (fixed, like `30x40`/`tv169`, **or custom**, `25x35` / `sticker5`), `output_ext`
   (`png`/`jpg`, omit = global default), `orientation`, `crop_mode`, `contour_mm`,
   `delivery_folder`, `delivery`. Returns the job ID.
 - **job_status** — query the status of a job (including finish time and error messages).

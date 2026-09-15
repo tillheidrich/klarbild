@@ -22,7 +22,7 @@ nothing uploaded.
 
 ```bash
 git clone https://github.com/tillheidrich/klarbild.git && cd klarbild
-cp .env.example .env          # fill in three secrets, the file says which
+cp .env.example .env          # four values at the top; the file says which
 docker compose up -d
 docker compose logs app       # your admin password is printed here, once
 ```
@@ -42,7 +42,7 @@ output is a PDF laid out in millimetres, not a scaled bitmap, so 30 × 40 cm is
 **Sheet layout.** Put several pictures on one sheet at 100 % with crop marks:
 corner marks (0.25 pt, outside the trim) or continuous lines. Equal sizes snap to
 an exact grid; mixed sizes go through a MaxRects packer. Bleed 0–10 mm. 19 paper
-formats from A6 to A2 — including A3+ and photo paper 9 × 13 to 20 × 30, Letter
+formats from A6 to A1 — including A3+ and photo paper 9 × 13 to 20 × 30, Letter
 and Legal — or a custom sheet.
 
 **Pictures bigger than the sheet, handled three ways.** A 20 × 30 cm print on A4
@@ -149,7 +149,7 @@ the two tools worth knowing.
 ## Contributing
 
 [klarbild-demo.heidrich-digital.de](https://klarbild-demo.heidrich-digital.de) is the product
-page; its source is [klarbild-demo](https://git.heidrich-digital.de/till/klarbild-demo).
+page.
 
 Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for
 how the code is laid out and what the house style is. Security reports go to the

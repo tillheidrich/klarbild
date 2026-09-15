@@ -128,7 +128,7 @@ export const PHOTO_SIZES: PhotoSize[] = [
   { id: 'C70x100', label: 'Bookmark 7 × 21 cm',             w: 70, h: 210, group: 'Cards' },
 
   // --- Aspect ratios as a print size (worked out on 30 cm) ---
-  { id: 'W16x9', label: '16:9 "The Frame" (30 cm wide)', w: 300, h: 168.75, group: 'Aspect ratio' },
+  { id: 'W16x9', label: '16:9 TV 16:9 (30 cm wide)', w: 300, h: 168.75, group: 'Aspect ratio' },
   { id: 'W9x16', label: '9:16 portrait (30 cm tall)',      w: 168.75, h: 300, group: 'Aspect ratio' },
   { id: 'W21x9', label: '21:9 cinema (30 cm wide)',        w: 300, h: 128.57, group: 'Aspect ratio' },
   { id: 'W2x1',  label: '2:1 panorama (30 cm wide)',       w: 300, h: 150, group: 'Aspect ratio' },

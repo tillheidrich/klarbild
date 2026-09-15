@@ -3,7 +3,7 @@
 // renaming, tests).
 //
 // Scheme: `YYYY-MM-DD_HHMMSS_<motif>_<format>_<short-id>.<ext>`
-//   2026-08-20_143207_portrait-badge_the-frame_a3f9.jpg
+//   2026-08-20_143207_portrait-badge_tv169_a3f9.jpg
 //
 // Why: the timestamp comes first, so every file listing — delivery target,
 // Finder, backup mirror — sorts chronologically by itself. The name becomes
@@ -89,7 +89,7 @@ export interface NameParts {
 /**
  * Unique, chronologically sortable file name:
  * `YYYY-MM-DD_HHMMSS_<motif>_<format>_<short-id>.<ext>`
- * e.g. `2026-08-20_143207_portrait_the-frame_a3f9.png`
+ * e.g. `2026-08-20_143207_portrait_tv169_a3f9.png`
  *
  * Why like this: the name begins with the timestamp, so every file listing
  * (delivery target, Finder, backup mirror) sorts chronologically by itself. It
@@ -142,7 +142,7 @@ export function newNameFor(it: { id: string; filename: string | null; created_at
 /** Format key for the file name (from the output_format). */
 export function formatToken(outputFormat: string | undefined): string {
   if (!outputFormat || outputFormat === 'keep') return 'original';
-  if (outputFormat === 'theframe') return 'the-frame';
+  if (outputFormat === 'tv169') return 'tv169';
   if (outputFormat === 'portrait916') return 'portrait916';
   return outputFormat.toLowerCase(); // 30x40, a4, sticker, …
 }

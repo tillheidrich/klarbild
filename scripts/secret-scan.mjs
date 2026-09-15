@@ -38,9 +38,11 @@ const RULES = [
 
 // Lines that are allowed to match: documentation of the shape of a secret,
 // and the example file, which is meant to show the names without the values.
+// Lines that are allowed to match: documentation of the *shape* of a secret.
+// Being a comment is deliberately not a free pass — a pasted `.env` fragment is
+// usually commented out, and that is exactly the mistake worth catching.
 const ALLOW = [
-  /example|placeholder|CHANGEME|your-|<[a-z]+>|openssl rand/i,
-  /^\s*(?:\/\/|#|--|\*)/,
+  /example|placeholder|CHANGEME|your-|<[a-z]+>|openssl rand|\.\.\.|xxxx/i,
 ];
 
 let findings = 0;

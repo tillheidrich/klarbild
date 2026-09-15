@@ -1,7 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import { has } from '../lib/modules';
 import SharesApp from '../components/SharesApp';
 import { tFor, dictFor } from '../lib/i18n.server';
+// A page of a module that is off does not exist for this instance.
+if (!has('share')) return Astro.redirect('/print', 302);
 const locale = Astro.locals.locale ?? 'en';
 const t = tFor(locale);
 const dict = dictFor(locale);

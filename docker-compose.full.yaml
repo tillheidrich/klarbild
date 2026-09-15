@@ -38,7 +38,6 @@ services:
       OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
       TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
       DELIVERY_DEFAULT_FOLDER: "${DELIVERY_DEFAULT_FOLDER:-klarbild}"
-      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-}"
 
       # The database wins over these; they only apply until something is entered
       # under Admin → Email, so a fresh install can send mail straight away.

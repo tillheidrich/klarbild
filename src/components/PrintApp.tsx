@@ -413,7 +413,7 @@ export default function PrintApp({ locale, dict }: { locale?: Locale; dict?: Dic
         body: JSON.stringify({ src: c.src, crop: c.crop, wMm: s.w, hMm: s.h, dpi, ext, name: c.name, fit: c.fit, bg: c.bg }),
       });
       if (!res.ok) { notify((await res.json().catch(() => ({}))).error || t('Failed.'), true); return; }
-      download(await res.blob(), filenameFromHeader(res.headers.get('Content-Disposition'), `bild.${ext}`));
+      download(await res.blob(), filenameFromHeader(res.headers.get('Content-Disposition'), `image.${ext}`));
       const real = res.headers.get('X-Klarbild-Real-Dpi');
       notify(res.headers.get('X-Klarbild-Dpi-Ok') === '0'
         ? t('Downloaded — careful: the source only carries about {dpi} dpi.', { dpi: String(real) })

@@ -54,7 +54,7 @@ const TOOLS = [
       tasks: { type: 'array', items: { type: 'string', enum: ['clean', 'cutout', 'format', 'contour'] },
         description: 'Only for mode=each. Default: ["format"] if output_format is set.' },
       prompt_text: { type: 'string', description: 'Description for compose/generate' },
-      output_format: { type: 'string', description: 'Fixed: 30x40, A4, theframe, portrait916, keep … OR custom: "25x35" (=25×35 cm) or "sticker5" (=5×5 cm).' },
+      output_format: { type: 'string', description: 'Fixed: 30x40, A4, tv169, portrait916, keep … OR custom: "25x35" (=25×35 cm) or "sticker5" (=5×5 cm).' },
       output_ext: { type: 'string', enum: ['png', 'jpg'], description: 'File format. Omit = global default setting. JPG only without transparency.' },
       orientation: { type: 'string', enum: ['portrait', 'landscape'] },
       crop_mode: { type: 'string', enum: ['crop', 'extend'] },
