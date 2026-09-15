@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PrintApp from '../components/PrintApp.tsx';
 import { tFor, dictFor } from '../lib/i18n.server';
+import { has } from '../lib/modules';
 const locale = Astro.locals.locale ?? 'en';
 const t = tFor(locale);
 const dict = dictFor(locale);
@@ -11,7 +12,7 @@ const dict = dictFor(locale);
   <p class="page-lead">
     {t('No AI: bring images to exact sizes and place several of them at 100% size with crop marks on one sheet — from the biometric passport photo through the school photo set to the 30 × 40 poster.')}
   </p>
-  <PrintApp client:load locale={locale} dict={dict} />
+  <PrintApp client:load locale={locale} dict={dict} canDeliver={has('delivery') || has('mirror')} />
   <style>
     .page-title{font-family:var(--font-display);font-size:1.6rem;margin:6px 0 4px;letter-spacing:-.02em;}
     .page-lead{color:var(--soft);font-size:13.5px;margin:0 0 16px;max-width:64ch;line-height:1.55;}

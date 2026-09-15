@@ -14,19 +14,18 @@ export default defineConfig({
   // Content-Security-Policy with hashes instead of 'unsafe-inline': Astro computes
   // the hash of every inline script and style it emits, at build time. The remaining
   // directives are set by the middleware (src/middleware.ts).
-  experimental: {
-    csp: {
-      directives: [
-        "default-src 'self'",
-        "img-src 'self' data: blob:",
-        "font-src 'self'",
-        "connect-src 'self'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-        "frame-ancestors 'none'",
-      ],
-    },
+  // Graduated out of `experimental` in Astro 7.
+  csp: {
+    directives: [
+      "default-src 'self'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ],
   },
   server: { host: true, port: Number(process.env.PORT) || 4321 },
   vite: {

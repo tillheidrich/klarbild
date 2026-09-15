@@ -3,13 +3,16 @@ import Base from '../layouts/Base.astro';
 import StudioApp from '../components/StudioApp.tsx';
 import { query } from '../lib/db';
 import { has } from '../lib/modules';
+import { tFor, dictFor } from '../lib/i18n.server';
 
 // Without the AI module there is no studio, and the print studio is the product.
 if (!has('ai')) return Astro.redirect('/print', 302);
 
 const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
 const recipes = await query('SELECT * FROM recipes ORDER BY is_default DESC, name').catch(() => []);
 ---
-<Base title="Studio · Klarbild">
+<Base title={t('Studio · Klarbild')}>
   <StudioApp client:load recipes={recipes} locale={locale} dict={dict} />
 </Base>

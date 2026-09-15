@@ -112,10 +112,11 @@ Astro 5 (SSR, Node standalone) with React islands · PostgreSQL · `sharp` ·
 `pdf-lib` · `pg-boss` · OKLCH design tokens, no Tailwind. Files go to a volume by
 default; S3/MinIO is available but not required.
 
-About 13,600 lines across 116 files, 124 tests, 16 forward-only idempotent
-migrations that run themselves on boot. English and German interface, 1,038
-translated strings; the English sentence is the translation key, so there is no key
-file to keep in sync.
+About 13,700 lines across 117 files, 124 tests, 16 forward-only idempotent
+migrations that run themselves on boot. English and German interface — 1,067
+entries, covering every translatable string in the source. The English sentence is
+the translation key, so there is no key file to keep in sync and a missing entry
+degrades to readable English rather than to `print.sheet.title`.
 
 ## Install
 

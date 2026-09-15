@@ -11,7 +11,8 @@ private repository as a personal tool.
   default is the print studio alone — no image model, no object store, no bot
   token, no account anywhere. See `src/lib/modules.ts`.
 - **English interface**, with German as a full second language. The English
-  sentence is the translation key; 1,038 strings.
+  sentence is the translation key; 1,067 entries, covering every translatable
+  string in the source.
 - **First-run setup.** No built-in accounts. The first boot creates one
   administrator from `ADMIN_USERNAME` / `ADMIN_PASSWORD`, or generates a password
   and prints it once to the log.
@@ -23,6 +24,7 @@ private repository as a personal tool.
 - English routes: `/print`, `/library`, `/queue`, `/shares`, `/help`, `/account`,
   `/tour`, `/password`.
 - AGPL-3.0, CI (build, tests, type check, secret scan), `CONTRIBUTING`, `SECURITY`.
+- Astro 7 and current `sharp`: `npm audit` reports no known vulnerability.
 
 **Carried over from the private tool**
 

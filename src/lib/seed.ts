@@ -44,14 +44,17 @@ async function seedAdmin(): Promise<void> {
   } else {
     // Printed once, on the first boot only. There is no way to recover it later;
     // the reset flow (module "mail") or a fresh volume is the way back.
+    const lines = [
+      'Klarbild is set up. Sign in with:',
+      `  user      ${username}`,
+      `  password  ${password}`,
+      'Shown once. Change it under Account after you sign in.',
+    ];
+    const w = Math.max(...lines.map((l) => l.length)) + 2;
     console.log(
-      '\n' +
-        '  ┌────────────────────────────────────────────────────────────┐\n' +
-        '  │  Klarbild is set up. Sign in with:                         │\n' +
-        `  │    user     ${username.padEnd(46)}│\n` +
-        `  │    password ${password.padEnd(46)}│\n` +
-        '  │  This is shown once. Change it under Account after login.  │\n' +
-        '  └────────────────────────────────────────────────────────────┘\n',
+      '\n  ┌' + '─'.repeat(w) + '┐\n' +
+        lines.map((l) => `  │ ${l.padEnd(w - 1)}│`).join('\n') +
+        '\n  └' + '─'.repeat(w) + '┘\n',
     );
   }
 }

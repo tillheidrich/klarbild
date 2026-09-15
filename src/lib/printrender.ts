@@ -1,7 +1,7 @@
 // Rendering the print sheet: crop (sharp) + PDF assembly (pdf-lib).
 // Deliberately without AI — plain geometry and scaling, so that the result is
 // predictable and repeatable.
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib';
 import { mmToPt, mmToPx } from './paper.ts';
 import type { Line, Page, SheetSpec } from './printlayout.ts';
@@ -112,7 +112,7 @@ export async function renderCell(
   const ext: 'jpg' | 'png' = opt.ext === 'png' || hasAlpha ? 'png' : 'jpg';
   if (hasAlpha && ext === 'jpg') img = img.flatten({ background: bg });
 
-  const encode = (pipe: sharp.Sharp) => (ext === 'png'
+  const encode = (pipe: Sharp) => (ext === 'png'
     ? pipe.withMetadata({ density: dpi }).png({ compressionLevel: 9 })
     : pipe.withMetadata({ density: dpi }).jpeg({ quality: 94, mozjpeg: true }));
 

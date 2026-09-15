@@ -110,7 +110,8 @@ function shrink(dataUrl: string, maxEdge = 700): Promise<{ url: string; w: numbe
 
 /* ========================================================================== */
 
-export default function PrintApp({ locale, dict }: { locale?: Locale; dict?: Dict | null }) {
+export default function PrintApp({ locale, dict, canDeliver = false }:
+  { locale?: Locale; dict?: Dict | null; canDeliver?: boolean }) {
   const t = useT(dict);
   const [cells, setCells] = useState<Cell[]>([]);
   const [paperId, setPaperId] = useState('A4');
@@ -298,8 +299,13 @@ export default function PrintApp({ locale, dict }: { locale?: Locale; dict?: Dic
 
   useEffect(() => {
     loadPresets();
-    fetch('/api/delivery-targets').then((r) => r.json()).then((j) => setTargets(j.targets || [])).catch(() => {});
-  }, []);
+    // Only ask when the delivery module is on. Asking anyway would work — the
+    // route answers 404 by design — but it puts a red line in the console of
+    // every print-only instance, which reads like a fault and is not one.
+    if (canDeliver) {
+      fetch('/api/delivery-targets').then((r) => r.json()).then((j) => setTargets(j.targets || [])).catch(() => {});
+    }
+  }, [canDeliver]);
   const loadPresets = () => fetch('/api/print/presets').then((r) => r.json())
     .then((j) => setPresets(j.presets || [])).catch(() => {});
 
@@ -706,6 +712,7 @@ export default function PrintApp({ locale, dict }: { locale?: Locale; dict?: Dic
                   )}
                 </Group>
 
+                {canDeliver && (
                 <Group closed title={t('Where to?')} hint={deliverTo ? t('deliver as well') : t('download only')}>
                   <select className="select" value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)}
                     aria-label={t('Additional target')}>
@@ -718,7 +725,7 @@ export default function PrintApp({ locale, dict }: { locale?: Locale; dict?: Dic
                     <input className="input" style={{ marginTop: 7 }} value={gallery} onChange={(e) => setGallery(e.target.value)}
                       placeholder={t('Folder on the target (empty = default)')} aria-label={t('Folder on the target')} />
                   )}
-                </Group>
+                </Group>)}
               </div>
             </div>
           </Card>
