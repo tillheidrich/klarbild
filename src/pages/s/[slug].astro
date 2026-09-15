@@ -1,0 +1,204 @@
+---
+// Public view of a share link — reachable without signing in.
+//
+// Deliberately its own slim page instead of the app: whoever gets the link
+// should be able to see the images and download them, and nothing else. No
+// navigation, no way into the library, no hint of what else exists here.
+import Base from '../../layouts/Base.astro';
+import { resolveShare, shareItems, trackShare, proofBuild, proofValid, proofFromCookie, proofName } from '../../lib/shares';
+import { tooOften, realIp } from '../../lib/limit';
+import { tFor, dictFor } from '../../lib/i18n.server';
+
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+// Day before month, like the rest of the tool's metric framing; German gets the
+// dotted form it expects.
+const dateLocale = locale === 'de' ? 'de-DE' : 'en-GB';
+const slug = Astro.params.slug!;
+
+// The passphrase arrives by POST (not as `?pw=` in the address — that would end
+// up in the history, in proxy logs and in every forwarded link). Once it has
+// been checked, a short-lived cookie limited to this one link remembers the
+// result: `argon2.verify` costs 130 ms and 64 MiB and otherwise ran again on
+// **every** image request.
+let entry: string | null = null;
+let wrong = false;
+let blocked = false;
+if (Astro.request.method === 'POST') {
+  // Limit guessing: a passphrase you read out over the phone is short — without
+  // a brake, guessing would have decent odds, and every check costs 130 ms and
+  // 64 MiB.
+  if (tooOften(`pass:${slug}:${realIp(Astro.request, Astro.clientAddress)}`, 10, 15 * 60_000)) {
+    blocked = true;
+  } else {
+    const f = await Astro.request.formData().catch(() => null);
+    entry = String(f?.get('pw') || '') || null;
+  }
+}
+const cookieHeader = Astro.request.headers.get('cookie');
+let { status, share } = await resolveShare(slug, entry);
+
+// Already proven? Then let it through without hashing again.
+if (status === 'passphrase' && share && proofValid(share.id, proofFromCookie(cookieHeader, slug))) {
+  status = 'ok';
+}
+if (status === 'ok' && share?.password_hash && entry) {
+  Astro.response.headers.append('Set-Cookie',
+    `${proofName(slug)}=${proofBuild(share.id)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=21600`);
+}
+if (status === 'passphrase' && entry) wrong = true;
+
+let images: Awaited<ReturnType<typeof shareItems>> = [];
+if (status === 'ok' && share) {
+  images = await shareItems(share.id);
+  await trackShare(share.id, 'view', Astro.clientAddress, Astro.request.headers.get('user-agent'));
+}
+
+// This page never belongs in a search index.
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, noimageindex');
+if (status !== 'ok') Astro.response.status = status === 'not-found' ? 404 : status === 'passphrase' ? 401 : 410;
+
+const title = share?.title || (images.length > 1 ? t('Images') : t('Image'));
+const dl = (id: string) => `/api/s/${slug}/file?item=${id}&download=1`;
+const full = (id: string) => `/api/s/${slug}/file?item=${id}`;
+const thumb = (id: string) => `/api/s/${slug}/file?item=${id}&thumb=1`;
+const messages: Record<string, { head: string; body: string }> = {
+  'not-found': { head: t('There is no such link'), body: t('Maybe a character went missing while it was copied. Best to ask for it again.') },
+  'expired':   { head: t('This link has expired'), body: t('Share links are only valid for a limited time. Whoever sent it to you can create a new one.') },
+  'revoked':   { head: t('This link was switched off'), body: t('It was switched off on purpose. Ask again if you need the images.') },
+};
+---
+<Base title={t('{title} · Klarbild', { title })}>
+  <main class="share">
+    {status === 'ok' && share ? (
+      <>
+        <header class="head">
+          <p class="brandline"><span class="regmark"></span> {t('shared via Klarbild')}</p>
+          <h1>{title}</h1>
+          {share.note && <p class="note">{share.note}</p>}
+          <p class="mono-label">
+            {images.length === 1 ? t('1 image') : t('{n} images', { n: images.length })}
+            {share.expires_at && <> · {t('valid until {date}', { date: new Date(share.expires_at).toLocaleDateString(dateLocale) })}</>}
+          </p>
+        </header>
+
+        {share.allow_download && images.length > 1 && (
+          <div class="all">
+            <a class="btn big" href={`/api/s/${slug}/zip`}>
+              {t('Download all {n} images', { n: images.length })}
+            </a>
+            <span class="all-hint">{t('as a ZIP file, at full resolution')}</span>
+          </div>
+        )}
+
+        {share.allow_download ? (
+          <p class="notice">
+            <Fragment set:html={t('<b>Download</b> saves the file at full resolution. On a phone it also works like this: press and hold an image, then save it.')} />
+            {images.length > 1 && <> {t('Or all of them at once, at the top.')}</>}
+          </p>
+        ) : (
+          <p class="notice">
+            {t('These images are here to be looked at. If you need a file, ask the person who sent you the link.')}
+          </p>
+        )}
+
+        {images.length === 0 ? (
+          <p class="empty">{t('There is nothing to see here right now. Maybe the images have been removed in the meantime — best to ask the person who sent you the link.')}</p>
+        ) : (
+          <div class={images.length === 1 ? 'grid single' : 'grid'}>
+            {images.map((b) => (
+              <figure class="photo">
+                <a href={full(b.id)} target="_blank" rel="noopener">
+                  {/* The thumbnail in the overview — otherwise the server renders
+                      a full image again for every tile. The large one only comes
+                      when the tile is tapped. */}
+                  <img src={images.length > 1 ? thumb(b.id) : full(b.id)}
+                       alt={b.filename || t('Image')} loading="lazy" />
+                </a>
+                <figcaption>
+                  <span class="size">{b.output_px?.replace('x', ' × ') || ''}</span>
+                  {share.allow_download
+                    ? <a class="btn" href={dl(b.id)}>{t('Download')}</a>
+                    : <span class="hint">{t('View only')}</span>}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        )}
+
+        <p class="privacy" set:html={t('Whoever sent you this link can see <b>when</b> it was opened and with what kind of device. Not <b>who</b> opened it: only an unrecognisable number is stored for your internet address, and that is deleted after 90 days.')} />
+      </>
+    ) : status === 'passphrase' ? (
+      <section class="gate">
+        <h1>{t('This link is protected by a passphrase')}</h1>
+        <p>{t('Enter the passphrase you were given along with the link.')}</p>
+        <form method="post" class="gate-form">
+          <input type="password" name="pw" placeholder={t('Passphrase')} aria-label={t('Passphrase')} autofocus required />
+          <button type="submit">{t('View images')}</button>
+        </form>
+        {blocked
+          ? <p class="error">{t('Too many attempts. Please try again in a quarter of an hour.')}</p>
+          : wrong && <p class="error">{t('That was not it, unfortunately.')}</p>}
+      </section>
+    ) : (
+      <section class="gate">
+        <h1>{messages[status]?.head ?? t('Not available')}</h1>
+        <p>{messages[status]?.body ?? ''}</p>
+      </section>
+    )}
+  </main>
+
+  <style>
+    .share { max-width: 1000px; margin: 0 auto; padding: 40px 20px 72px; }
+    .head { margin-bottom: 26px; }
+    .brandline { display: flex; align-items: center; gap: 8px; margin: 0 0 10px;
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--soft); }
+    .head h1 { font-size: clamp(1.5rem, 4vw, 2rem); margin: 0 0 8px; letter-spacing: -0.02em; }
+    .note { margin: 0 0 10px; color: var(--ink-soft); max-width: 60ch; line-height: 1.6; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+    .grid.single { grid-template-columns: minmax(0, 1fr); max-width: 720px; }
+    .photo { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    /* Only the **direct** image link, not every link in the figure: `.photo a`
+       also caught the download button in the caption and painted it over with
+       paper colour — light text on a light ground, practically invisible. */
+    .photo > a { display: block; line-height: 0; background: var(--paper); }
+    .photo img { width: 100%; height: auto; display: block; }
+    figcaption { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
+    .size { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--soft); }
+    .btn { background: var(--accent); color: var(--card); text-decoration: none; font-size: 13px; font-weight: 600;
+      padding: 8px 14px; border-radius: 3px; white-space: nowrap; }
+    /* The download-everything button sits above the images: with twenty tiles
+       nobody finds it at the bottom, and tapping each one is even less
+       appealing. */
+    .all { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 18px; }
+    .btn.big { font-size: 15px; padding: 13px 22px; border-radius: var(--radius-sm); }
+    .all-hint { font-size: 12.5px; color: var(--soft); }
+    .hint { font-size: 12px; color: var(--soft); }
+    .empty { color: var(--soft); }
+    /* Sits above the images: below twenty tiles nobody would read it. */
+    .notice { margin: 0 0 20px; padding: 11px 13px; border: 1px solid var(--line);
+      border-radius: var(--radius-sm); background: var(--card);
+      font-size: 13px; color: var(--ink-soft); line-height: 1.6; max-width: 62ch; }
+    .privacy { margin: 30px 0 0; padding-top: 16px; border-top: 1px solid var(--line);
+      font-size: 12px; color: var(--soft); line-height: 1.6; max-width: 62ch; }
+
+    .gate { max-width: 460px; margin: 8vh auto 0; text-align: center; }
+    .gate h1 { font-size: 1.4rem; margin: 0 0 12px; }
+    .gate p { color: var(--ink-soft); line-height: 1.6; margin: 0 0 20px; }
+    .gate-form { display: flex; gap: 8px; }
+    .gate-form input { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--card); font-size: 16px; font-family: inherit; color: var(--ink); }
+    .gate-form button { border: none; border-radius: var(--radius-sm); background: var(--accent); color: #fff;
+      padding: 12px 20px; font-weight: 600; font-family: inherit; font-size: 15px; cursor: pointer; }
+    .error { color: var(--err); margin-top: 14px; font-size: 14px; }
+
+    @media (max-width: 640px) {
+      .share { padding: 24px 14px 56px; }
+      .grid { grid-template-columns: 1fr; gap: 14px; }
+      .btn { padding: 11px 16px; }
+    }
+  </style>
+</Base>

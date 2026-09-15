@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import { tFor, dictFor } from '../lib/i18n.server';
+import { has } from '../lib/modules';
+if (Astro.locals.user) return Astro.redirect('/');
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+// The claim should describe the instance, not the maintainer's install.
+const claim = has('ai')
+  ? t('Screenshot in, clean image out.')
+  : t('Pictures on paper, at exactly the size you asked for.');
+---
+<Base title={t('Sign in · Klarbild')}>
+  <section class="login">
+    <h1 class="display">Klarbild</h1>
+    <p class="claim">{claim}</p>
+    <form id="f" class="card" data-failed={t('Sign-in failed.')}>
+      <label>{t('Username')}<input name="username" autocomplete="username" required autofocus /></label>
+      <label>{t('Password')}<input name="password" type="password" autocomplete="current-password" required /></label>
+      <button type="submit">{t('Sign in')}</button>
+      <p id="err" class="err" hidden></p>
+      <a class="forgot" href="/password">{t('Forgot your password?')}</a>
+    </form>
+  </section>
+  <style>
+    .login { max-width: 360px; margin: 8vh auto 0; text-align: center; }
+    .display { font-family: var(--font-display); font-size: 2.4rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .claim { color: var(--ink-mute); margin: 0 0 28px; }
+    .card { display: grid; gap: 14px; text-align: left; background: var(--surface);
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+    label { display: grid; gap: 6px; font-size: 0.9rem; color: var(--ink-soft); }
+    input { padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--paper); color: var(--ink); font-size: 1rem; }
+    button { margin-top: 4px; padding: 11px; border: none; border-radius: var(--radius-sm);
+      background: var(--accent); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    .err { color: var(--err); font-size: 0.9rem; margin: 4px 0 0; }
+    .forgot { font-size: 0.85rem; color: var(--ink-soft); text-align: center; text-decoration: none; padding: 4px; }
+    .forgot:hover { color: var(--accent); }
+  </style>
+  <script>
+    const f = document.getElementById('f'); const err = document.getElementById('err');
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault(); err.hidden = true;
+      const data = Object.fromEntries(new FormData(f));
+      const res = await fetch('/api/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+      });
+      if (res.ok) { location.href = '/'; }
+      else { const j = await res.json().catch(() => ({})); err.textContent = j.error || f.dataset.failed; err.hidden = false; }
+    });
+  </script>
+</Base>

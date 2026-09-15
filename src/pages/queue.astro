@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import QueueApp from '../components/QueueApp.tsx';
+import { tFor, dictFor } from '../lib/i18n.server';
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+const jobId = Astro.url.searchParams.get('job');
+---
+<Base title={t('Queue · Klarbild')}>
+  <h1 class="page-title">{t('Queue')}</h1>
+  <QueueApp client:load jobId={jobId} locale={locale} dict={dict} />
+  <style>.page-title{font-family:var(--font-display);font-size:1.6rem;margin:6px 0 16px;letter-spacing:-.02em;}</style>
+</Base>

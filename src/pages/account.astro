@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import AccountApp from '../components/AccountApp';
+import { tFor, dictFor } from '../lib/i18n.server';
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+---
+<Base title={t('My account · Klarbild')}>
+  <section class="page">
+    <header class="pagehead">
+      <h1>{t('My account')}</h1>
+      <p class="lead">{t('Email address and notifications.')}</p>
+    </header>
+    <AccountApp client:load locale={locale} dict={dict} />
+  </section>
+  <style>
+    .page { max-width: var(--maxw); margin: 0 auto; padding: 26px 20px 80px; }
+    .pagehead { margin-bottom: 18px; }
+    .pagehead h1 { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0 0 6px; letter-spacing: -0.02em; }
+    .lead { margin: 0; color: var(--ink-soft); line-height: 1.6; font-size: 0.95rem; }
+    @media (max-width: 640px) { .page { padding: 18px 14px 90px; } }
+  </style>
+</Base>

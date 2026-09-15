@@ -1,0 +1,104 @@
+# Klarbild — everything switched on: print studio, image generation, delivery,
+# backup mirror, share links, mail, Telegram bot, and MinIO as the object store.
+#
+#   docker compose -f docker-compose.full.yaml up -d
+#
+# Only take this one if you actually want the extra parts. The modules you leave
+# unconfigured stay dark rather than half-working, but you are still running two
+# more containers than the default stack needs.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PORT: "4321"
+      DATABASE_URL: "postgres://klarbild:${DB_PASSWORD:?set DB_PASSWORD in .env}@db:5432/klarbild"
+
+      STORAGE_DRIVER: "s3"
+      S3_ENDPOINT: "http://minio:9000"
+      S3_REGION: "us-east-1"
+      S3_BUCKET: "klarbild"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY:?set S3_SECRET_KEY in .env}"
+      S3_FORCE_PATH_STYLE: "true"
+
+      SESSION_SECRET: "${SESSION_SECRET:?set SESSION_SECRET in .env}"
+      ENCRYPTION_KEY: "${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}"
+
+      KLARBILD_MODULES: "${KLARBILD_MODULES:-all}"
+      KLARBILD_LOCALE: "${KLARBILD_LOCALE:-en}"
+      KLARBILD_TZ: "${KLARBILD_TZ:-Europe/Berlin}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:?share links and the Telegram webhook need a public address}"
+
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
+      DELIVERY_DEFAULT_FOLDER: "${DELIVERY_DEFAULT_FOLDER:-klarbild}"
+      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-}"
+
+      # The database wins over these; they only apply until something is entered
+      # under Admin → Email, so a fresh install can send mail straight away.
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_SECURE: "${SMTP_SECURE:-false}"
+      SMTP_USER: "${SMTP_USER:-}"
+      SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
+      SMTP_FROM: "${SMTP_FROM:-}"
+
+      # Coolify users: uncomment and drop the `ports:` block below.
+      # SERVICE_FQDN_APP_4321: /
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - "${PORT:-4321}:4321"
+    # See docker-compose.yaml for why this limit is here.
+    mem_limit: 3g
+    mem_reservation: 512m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: klarbild
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in .env}"
+      POSTGRES_DB: klarbild
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U klarbild"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env}"
+      MINIO_ROOT_PASSWORD: "${S3_SECRET_KEY:?set S3_SECRET_KEY in .env}"
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
+  minio-data:

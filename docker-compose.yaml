@@ -1,0 +1,77 @@
+# Klarbild — the default stack: the print studio and a database. That is all.
+#
+#   cp .env.example .env     # fill in the three secrets at the top
+#   docker compose up -d
+#   docker compose logs app  # the first-start password is printed once, here
+#
+# No object store, no image model, no bot token. If you want those, use
+# docker-compose.full.yaml instead, or set KLARBILD_MODULES yourself.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PORT: "4321"
+      DATABASE_URL: "postgres://klarbild:${DB_PASSWORD:?set DB_PASSWORD in .env}@db:5432/klarbild"
+
+      # Files on a volume. Nothing else to run, nothing else to back up.
+      STORAGE_DRIVER: "fs"
+      STORAGE_DIR: "/data"
+
+      # openssl rand -base64 48
+      SESSION_SECRET: "${SESSION_SECRET:?set SESSION_SECRET in .env}"
+      # openssl rand -hex 32
+      ENCRYPTION_KEY: "${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}"
+
+      KLARBILD_MODULES: "${KLARBILD_MODULES:-print}"
+      KLARBILD_LOCALE: "${KLARBILD_LOCALE:-en}"
+      KLARBILD_TZ: "${KLARBILD_TZ:-Europe/Berlin}"
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-http://localhost:4321}"
+
+      # Leave empty and the first boot generates a password and logs it once.
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+
+      # Coolify users: uncomment the next line and drop the `ports:` block
+      # below — Coolify's proxy wants the service, not a published port.
+      # SERVICE_FQDN_APP_4321: /
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-4321}:4321"
+    volumes:
+      - files:/data
+    # Memory ceiling: sharp can spike hard on a large image. Without a limit one
+    # outlier takes the whole container with it; with a limit only the Node
+    # process dies, and the healthcheck brings it back.
+    mem_limit: 3g
+    mem_reservation: 512m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: klarbild
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in .env}"
+      POSTGRES_DB: klarbild
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U klarbild"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
+  files:

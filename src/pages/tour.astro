@@ -1,0 +1,293 @@
+---
+// Public tour page for the print module.
+// Deliberately without a login and without controls: it shows what the tool can
+// do, but you cannot use it here. Meant as a landing page for an open-source
+// release (Gitea/GitHub) and for showing the tool to someone.
+import Base from '../layouts/Base.astro';
+import { PHOTO_SIZES, PAPERS } from '../lib/paper';
+import { layout, cutMarks, type SheetSpec } from '../lib/printlayout';
+import { tFor, dictFor } from '../lib/i18n.server';
+
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+
+const sizeCount = PHOTO_SIZES.length;
+const paperCount = PAPERS.length;
+const groupCount = new Set(PHOTO_SIZES.map((p) => p.group)).size;
+
+const features = [
+  {
+    kicker: t('True to size'),
+    title: t('Millimetres instead of “roughly”'),
+    text: t('Every final size is computed in millimetres and only turned into pixels when it is rendered. The PDF has exactly the sheet size, and every image on it exactly its target size. Checking that is not guesswork but measurement: we rasterise the finished PDFs at 254 dpi and count the pixel edges.'),
+    proof: t('13 × 18 cm → measured 130.1 × 180.1 mm'),
+  },
+  {
+    kicker: t('Space'),
+    title: t('Several images on one sheet'),
+    text: t('Images of the same size go into an exact grid. With mixed formats a packer (MaxRects, “best short side fit”) looks for the arrangement that needs the fewest sheets — and tries every combination of portrait and landscape to find it. A set of passport photos and a 13 × 18 fit on the same sheet that way.'),
+    proof: t('School photo set: 9 pieces on one A4 sheet instead of 3'),
+  },
+  {
+    kicker: t('Cutting'),
+    title: t('Crop marks as in prepress'),
+    text: t('Fine corner marks outside every image, or continuous grid lines across the whole sheet. The lines break where another image lies — nothing is ever drawn across a picture. Length and offset can be set, and so can the bleed.'),
+    proof: t('Corner marks · continuous grid · bleed 0–10 mm'),
+  },
+  {
+    kicker: t('Too large'),
+    title: t('20 × 30 on A4 — even so'),
+    text: t('The everyday case: it is meant to be a 20 × 30, but the only photo paper in the house is A4. Instead of “cannot be done” there are two ways out. Oversize places the image centred on the whole sheet; whatever hangs over is missing afterwards — and how much that is stands there beforehand.'),
+    proof: t('20 × 30 cm on A4: exactly 3 mm are missing in height'),
+  },
+  {
+    kicker: t('Poster'),
+    title: t('One image, several sheets'),
+    text: t('The second way out for large sizes: the image is spread across several sheets. The tiles overlap by a glue flap, which is printed on both neighbouring sheets and marked with a dashed line. Every sheet carries its number with row and column.'),
+    proof: t('30 × 40 cm on A4 → 2 × 2 sheets, 10 mm glue flap'),
+  },
+  {
+    kicker: t('Cropping'),
+    title: t('The crop stays yours'),
+    text: t('If the aspect ratio does not fit, you decide: crop or letterbox. In the crop window you move and zoom the original inside the target frame — with the mouse, a finger, a double-tap or the arrow keys. The crop is stored relatively and survives any resolution.'),
+    proof: t('EXIF rotation is applied beforehand — phone photos come out upright'),
+  },
+];
+
+const stats = [
+  { value: String(sizeCount), label: t('Image sizes'), hint: t('in {n} groups — passport photo up to 100 × 140 cm', { n: groupCount }) },
+  { value: String(paperCount), label: t('Paper sizes'), hint: t('DIN A7–A0, photo paper, US sizes, custom size') },
+  { value: '0', label: t('AI involved'), hint: t('plain geometry, no model, nothing uploaded anywhere') },
+  { value: '1:1', label: t('Output'), hint: t('PDF at original size, 72–1200 dpi') },
+];
+
+// The sample sheet below is not drawn, it is computed — with exactly the same
+// packer the tool uses. If the algorithm changes, the picture on this page
+// changes with it.
+const sampleSheet: SheetSpec = { wMm: 210, hMm: 297, marginMm: 5, gapMm: 8, bleedMm: 0, center: true };
+const samplePlan = layout([
+  { id: 'large', wMm: 130, hMm: 180, count: 1, allowRotate: true },
+  { id: 'small', wMm: 90, hMm: 130, count: 1, allowRotate: true },
+  { id: 'passport', wMm: 35, hMm: 45, count: 6, allowRotate: true },
+], sampleSheet);
+const samplePage = samplePlan.pages[0];
+const sampleMarks = samplePage ? cutMarks(samplePage, sampleSheet, { mode: 'corner', lengthMm: 3, offsetMm: 1 }) : [];
+const sampleColor: Record<string, string> = {
+  large: 'oklch(45% 0.23 267 / 0.09)', small: 'oklch(45% 0.23 267 / 0.20)', passport: 'oklch(45% 0.23 267 / 0.34)',
+};
+const samplePieces = samplePage ? samplePage.placements.length : 0;
+/** Compact size for the little box: under 10 cm in mm, otherwise in cm. */
+const shortSize = (w: number, h: number) => w < 100 && h < 100
+  ? `${Math.round(w)}×${Math.round(h)}`
+  : `${Math.round(w / 10)}×${Math.round(h / 10)} cm`;
+
+const steps = [
+  { n: '01', title: t('Choose images'), text: t('Upload them, take them out of the library, or duplicate an image you already have to print it at two sizes.') },
+  { n: '02', title: t('Set the sizes'), text: t('One target size per image, the quantity, portrait or landscape, crop or letterbox.') },
+  { n: '03', title: t('Set up the sheet'), text: t('Paper, crop marks, margins, resolution. The preview shows straight away how many sheets it will be.') },
+  { n: '04', title: t('Print'), text: t('Create the PDF and choose “Actual size / 100%” in the print dialog. Done.') },
+];
+---
+<Base title={t('Klarbild Print — bring images to exact sizes')}>
+  <main class="tour">
+
+    <header class="hero">
+      <p class="mono-label">{t('Klarbild · Print module')}</p>
+      <h1>{t('Bring images to exact sizes.')}<br /><span class="no-ai">{t('Without AI.')}</span></h1>
+      <p class="lead">
+        {t('A passport photo is 35 × 45 millimetres. A picture frame is 13 × 18 centimetres. Both are measurements, not opinions — and still it is remarkably laborious to get a photo out of the printer at exactly that size. This tool turns it into one move: enter the target size, choose the crop, print the PDF. Accurate to the millimetre, with crop marks, several images on one sheet.')}
+      </p>
+      <div class="hero-marks" aria-hidden="true">
+        <svg viewBox="0 0 300 120" class="hero-svg">
+          <rect x="8" y="8" width="284" height="104" fill="#FBFBF7" stroke="#D7D6CC" />
+          <g stroke="#1B3BE0" stroke-width="1">
+            <path d="M26 22h-10M22 26v-10" /><path d="M120 22h10M124 26v-10" />
+            <path d="M26 98h-10M22 94v10" /><path d="M120 98h10M124 94v10" />
+            <path d="M156 22h-10M152 26v-10" /><path d="M282 22h-8M278 26v-10" />
+            <path d="M156 98h-10M152 94v10" /><path d="M282 98h-8M278 94v10" />
+          </g>
+          <rect x="26" y="22" width="94" height="76" fill="#EAEAE3" stroke="#D7D6CC" stroke-width="0.5" />
+          <rect x="156" y="22" width="120" height="76" fill="#EAEAE3" stroke="#D7D6CC" stroke-width="0.5" />
+          <text x="30" y="93" font-family="monospace" font-size="7" fill="#6A685D">35 × 45 mm</text>
+          <text x="160" y="93" font-family="monospace" font-size="7" fill="#6A685D">13 × 18 cm</text>
+        </svg>
+      </div>
+    </header>
+
+    <section class="stats" aria-label={t('Key figures')}>
+      {stats.map((d) => (
+        <div class="stat">
+          <b>{d.value}</b>
+          <span class="mono-label">{d.label}</span>
+          <p>{d.hint}</p>
+        </div>
+      ))}
+    </section>
+
+    <section class="problem">
+      <h2>{t('The problem')}</h2>
+      <p>
+        {t('The usual route runs through a layout program or through the printer driver, and both of them mean too well: “fit to page”, “scale to fit”, “scale borderless”. What comes out is a print that is almost right. For a passport photo, “almost” is too little, and using a whole A4 sheet for a 4 × 3 snapshot, only because it would otherwise not fit on the page at 100% size, is plain waste.')}
+      </p>
+      <p>
+        {t('Klarbild Print computes in millimetres instead, packs as many images onto a sheet as will go, and puts crop marks where the cut is made. What comes out of the printer has the size you entered.')}
+      </p>
+    </section>
+
+    <section class="sample">
+      <h2>{t('One sheet, computed')}</h2>
+      <p class="sample-lead">
+        {t('One 13 × 18, one 9 × 13 and six passport photos — on a single A4 sheet, all at 100% size, with corner marks for cutting. This drawing is not a sketch: it comes from the same packer that produces the PDF.')}
+      </p>
+      <div class="sample-holder">
+        <svg class="sample-svg" viewBox={`-6 -6 ${sampleSheet.wMm + 12} ${sampleSheet.hMm + 12}`} role="img"
+             aria-label={t('A4 sheet with {n} images in three sizes', { n: samplePieces })}>
+          <rect x="0" y="0" width={sampleSheet.wMm} height={sampleSheet.hMm} fill="#FBFBF7" stroke="#D7D6CC" stroke-width="0.4" />
+          {samplePage?.placements.map((pl) => (
+            <g>
+              <rect x={pl.x} y={pl.y} width={pl.w} height={pl.h}
+                    fill={sampleColor[pl.specId] || 'oklch(45% 0.23 267 / 0.14)'}
+                    stroke="oklch(45% 0.23 267 / 0.45)" stroke-width="0.3" />
+              <text x={pl.x + pl.w / 2} y={pl.y + pl.h / 2 + 1.6} text-anchor="middle"
+                    font-family="monospace" font-size="4" fill="#16150F" opacity="0.62">
+                {shortSize(pl.w, pl.h)}
+              </text>
+            </g>
+          ))}
+          {sampleMarks.map((l) => (
+            <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="#1B3BE0" stroke-width="0.25" />
+          ))}
+        </svg>
+        <ul class="sample-list">
+          <li><i style="background: oklch(45% 0.23 267 / 0.09)"></i> 1 × 13 × 18 cm</li>
+          <li><i style="background: oklch(45% 0.23 267 / 0.20)"></i> 1 × 9 × 13 cm</li>
+          <li><i style="background: oklch(45% 0.23 267 / 0.34)"></i> 6 × 35 × 45 mm</li>
+          <li class="sample-sum">{t('{pieces} pieces on {sheets} sheets · 5 mm margin · 8 mm gap', { pieces: samplePieces, sheets: samplePlan.pages.length })}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="features">
+      <h2>{t('What it can do')}</h2>
+      <div class="cards">
+        {features.map((k) => (
+          <article class="card">
+            <p class="mono-label">{k.kicker}</p>
+            <h3>{k.title}</h3>
+            <p class="card-text">{k.text}</p>
+            <p class="card-proof">{k.proof}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="flow">
+      <h2>{t('In four steps')}</h2>
+      <ol class="steps">
+        {steps.map((s) => (
+          <li><span class="mono-label">{s.n}</span><b>{s.title}</b><p>{s.text}</p></li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="tech">
+      <h2>{t('Under the hood')}</h2>
+      <dl>
+        <div><dt>{t('Unit')}</dt><dd set:html={t('Millimetres. Pixels only appear at render time (<code>px = mm / 25.4 × dpi</code>), PDF points via <code>mm / 25.4 × 72</code>.')} /></div>
+        <div><dt>{t('Compute core')}</dt><dd>{t('Dependency-free TypeScript. The browser preview and the server PDF use literally the same code — what you see is what gets printed.')}</dd></div>
+        <div><dt>{t('Packing')}</dt><dd>{t('An exact grid for equal sizes, MaxRects (best short side fit) for mixed ones. Scored by fewest sheets, fullest first page, fewest rotations.')}</dd></div>
+        <div><dt>{t('Image')}</dt><dd>{t('sharp in a single chain: EXIF rotation, crop, scaling, border. The crop is stored relatively (0…1) and is therefore independent of resolution.')}</dd></div>
+        <div><dt>{t('PDF')}</dt><dd>{t('pdf-lib. Page size exactly the sheet size, images placed 1 : 1, crop marks as vector lines, glue flaps dashed.')}</dd></div>
+        <div><dt>{t('Proof')}</dt><dd>{t('Automated tests for the geometry plus a raster sample of the finished PDFs at 254 dpi (= 10 px/mm) with edge measurement.')}</dd></div>
+      </dl>
+    </section>
+
+    <section class="open">
+      <h2>{t('Run it yourself')}</h2>
+      <p>
+        {t('Klarbild runs on a server of your own: Astro with Node, PostgreSQL, a queue in the same process, files locally or on S3. The print module needs no external service at all — no model, no key, no images that leave the house. If all you want is printing, the AI parts never have to be configured.')}
+      </p>
+      <p class="hint">
+        {t('This page is a tour, not a user interface — nothing can be uploaded and nothing generated here.')}
+      </p>
+    </section>
+
+    <footer class="foot">
+      <span class="regmark"></span>
+      <span>{t('Klarbild · Print module')}</span>
+    </footer>
+  </main>
+
+  <style>
+    .tour { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+    .tour h2 { font-size: 1.5rem; letter-spacing: -0.01em; margin: 0 0 14px; }
+    .tour section { margin: 64px 0; }
+
+    .hero { padding: 72px 0 8px; }
+    .hero h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -0.03em; margin: 14px 0 20px; }
+    .no-ai { color: var(--accent); }
+    .lead { font-size: clamp(1rem, 2.2vw, 1.15rem); color: var(--ink-soft); max-width: 62ch; margin: 0; line-height: 1.65; }
+    .hero-marks { margin-top: 34px; }
+    .hero-svg { width: 100%; max-width: 420px; height: auto; display: block; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+      background: var(--line); border: 1px solid var(--line); }
+    .stat { background: var(--card); padding: 20px 18px; }
+    .stat b { display: block; font-size: 2rem; letter-spacing: -0.03em; line-height: 1.1; }
+    .stat .mono-label { display: block; margin: 6px 0 8px; }
+    .stat p { margin: 0; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.5; }
+
+    .problem p { max-width: 68ch; color: var(--ink-soft); margin: 0 0 14px; }
+
+    .sample-lead { max-width: 62ch; color: var(--ink-soft); margin: 0 0 24px; }
+    .sample-holder { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 32px; align-items: start; }
+    .sample-svg { width: 100%; height: auto; display: block; }
+    .sample-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px;
+      font-size: 0.9rem; color: var(--ink-soft); }
+    .sample-list li { display: flex; align-items: center; gap: 10px; }
+    .sample-list i { width: 22px; height: 22px; border: 1px solid oklch(45% 0.23 267 / 0.45); flex: none; }
+    .sample-sum { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+      color: var(--soft); padding-top: 12px; border-top: 1px solid var(--line); }
+    .sample-sum::before { content: none; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+    .card h3 { font-size: 1.12rem; margin: 8px 0 10px; letter-spacing: -0.01em; }
+    .card-text { margin: 0; font-size: 0.92rem; color: var(--ink-soft); line-height: 1.62; }
+    .card-proof { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); line-height: 1.5; }
+
+    .steps { list-style: none; padding: 0; margin: 0; display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .steps li { border-top: 2px solid var(--ink); padding-top: 12px; }
+    .steps b { display: block; margin: 8px 0 6px; }
+    .steps p { margin: 0; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.6; }
+
+    .tech dl { margin: 0; display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .tech dl > div { background: var(--card); padding: 14px 18px; display: grid;
+      grid-template-columns: 130px minmax(0, 1fr); gap: 16px; align-items: baseline; }
+    .tech dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--soft); }
+    .tech dd { margin: 0; font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; }
+    .tech code { font-family: var(--font-mono); font-size: 0.82em; background: var(--paper);
+      border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; }
+
+    .open p { max-width: 68ch; color: var(--ink-soft); margin: 0 0 14px; }
+    .open .hint { font-size: 0.85rem; color: var(--soft); }
+
+    .foot { display: flex; align-items: center; gap: 10px; padding-top: 28px;
+      border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); }
+
+    @media (max-width: 860px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) {
+      .tour { padding: 0 16px 64px; }
+      .hero { padding: 40px 0 4px; }
+      .tour section { margin: 44px 0; }
+      .tech dl > div { grid-template-columns: 1fr; gap: 6px; }
+      .sample-holder { grid-template-columns: 1fr; gap: 20px; }
+    }
+  </style>
+</Base>

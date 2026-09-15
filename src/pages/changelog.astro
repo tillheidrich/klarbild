@@ -1,0 +1,159 @@
+---
+import Base from '../layouts/Base.astro';
+import { tFor, dictFor } from '../lib/i18n.server';
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+---
+<Base title={t('Changelog · Klarbild')}>
+  <div class="clog">
+    <div class="chead">
+      <h1>{t('Changelog')}</h1>
+      <a class="back" href="/help">{t('← Back to help')}</a>
+    </div>
+    <p class="lead">{t('What is new in Klarbild. Newest changes at the top.')}</p>
+
+    <section>
+      <div class="ver"><span class="tag">{t('1 Sep 2026')}</span><h2>{t('Print: images from the library, and what you printed last')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Images from the library into the print area.</b> Until now you had to upload a file even when Klarbild had it already. The print area now offers <b>“Choose from the library”</b> — with search, by folder, and several at once.')} />
+        <li set:html={t('<b>Printed recently.</b> At the very bottom of the print area you can see what you printed before: sizes, quantity, the images. <b>Print again</b> produces exactly the same sheet a second time, without you setting anything up again. <b>Reuse settings</b> brings back only the paper, the marks and the margins — for “like last time, but with different photos”.')} />
+        <li set:html={t('<b>Without filling up the disk:</b> what is kept is not the PDFs — an A3 sheet is quickly 20 to 80 MB — but only the settings, a few kilobytes. Because the print area computes without AI, the same job yields exactly the same sheet again. That is why “Print again” only appears when all the images came from the library and are still there; otherwise the entry says what is in the way. The last 100 prints are kept.')} />
+        <li set:html={t('<b>On a phone</b> the four cards now come in their own order — the preview used to slide to the top, and you scrolled past everything before you could add an image.')} />
+        <li set:html={t('<b>Email runs by itself.</b> The account for the sending mailbox is configured in place; nothing has to be entered under Admin → Email any more. That page now also shows which account is actually in use.')} />
+        <li set:html={t('<b>Fixed: print files were all called the same.</b> Two sheets on the same day were both <code>2026-09-01_print-sheet.pdf</code> — in the same folder the second overwrote the first. Now it is <code>2026-09-01_143207_print-9-pieces_a4_4eca.pdf</code>: date, time to the second, what is on the sheet, the paper and a short id. The short id belongs to the history entry — so you can see which print was which file. Single images are now named after their subject.')} />
+        <li set:html={t('<b>Fixed:</b> the same went for ZIPs from the library — every one of them was called <code>klarbild_2026-09-01.zip</code>.')} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('1 Sep 2026')}</span><h2>{t('Sharing images, email, forgotten passwords')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Share links.</b> In the library, tap <b>Share</b> — for one image or for several selected ones at once. The result is a link that someone <b>without a Klarbild account</b> can open too; from there the image can be downloaded at full resolution.')} />
+        <li set:html={t('<b>Pass it on via WhatsApp</b> (opens WhatsApp with the text ready), through your own mail program, or by email straight out of Klarbild to several recipients at once.')} />
+        <li set:html={t('<b>Safe by default:</b> every link <b>expires by itself</b> (30 days by default, changeable in Admin), can be <b>switched off</b> and released again at any time, can be protected with a <b>passphrase</b> if you want, and downloading can be blocked entirely. Search engines never get to see the pages. Images from private sessions cannot be shared at all.')} />
+        <li set:html={t('<b>All images at once:</b> with more than one image there is a button above the page, <b>“Download all N images”</b> — a ZIP at full resolution. With twenty images the recipient previously had to tap twenty times.')} />
+        <li set:html={t('<b>An overview under <a href="/shares">Shared links</a>:</b> views, downloads and the number of visitors per link. What is recorded is <b>when</b> a link was opened and with what kind of device — not <b>who</b> opened it. It is deleted after 90 days.')} />
+        <li set:html={t('<b>Sending email</b> through your own mailbox (Admin → Email). That makes these work: <b>forgotten passwords</b>, a <b>notice when a job is finished</b> (switch it on under <a href="/account">My account</a>) and sending share links.')} />
+        <li set:html={t('<b>Forgot your password?</b> At the bottom of the sign-in page. The link from the mail is valid for one hour and can only be used once. It needs an email address stored under <b>My account</b>.')} />
+        <li set:html={t('<b>Fixed:</b> a new password now also ends every sign-in that is still open. An existing session used to stay valid for up to 30 days — so resetting your password because somebody else had got in did nothing for you.')} />
+        <li set:html={t('<b>Fixed:</b> “Block downloads” had no effect on cut-out subjects.')} />
+        <li set:html={t('<b>AI images now carry a machine-readable marker</b> (IPTC/XMP) including the model used — right inside the image file.')} />
+        <li>{t('Small things: the colour flag no longer sits on top of the selection circle; the top bar fits on a tablet again; the admin area can be operated on a phone.')}</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('21 Aug 2026')}</span><h2>{t('Unique file names — images no longer overwrite each other')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Fixed: images overwrote each other on the delivery target.</b> Generating the same subject in the same format twice on one day — two badges, say — produced the same file name twice (<code>2026-07-23_portrait_the-frame.png</code>). On delivery the second image then silently replaced the first. That can no longer happen.')} />
+        <li set:html={t("<b>The new name:</b> <code>2026-08-20_143207_ada-badge_the-frame_a3f9.jpg</code> — date, time to the second, subject, format and a short id. Because the timestamp comes first, <b>every file listing sorts chronologically by itself</b> — on the delivery target, in the file manager, on the backup mirror. The short id comes from the image's id and is therefore guaranteed to be unique.")} />
+        <li set:html={t("<b>The time is local time</b>, not UTC. An image made at 00:30 now carries the right date instead of the previous day's.")} />
+        <li set:html={t('<b>Retroactively for the whole library:</b> under <b>Admin → File names</b>, “Check library” first shows what would change (including the number of names currently used twice); “Rename now” carries it out. The image files themselves are left untouched. A second run changes nothing.')} />
+        <li set:html={t("<b>“Deliver again”</b> uploads every already delivered image once more under its new name. The old files stay behind on the target — you clear those away there yourself, so that nothing disappears from the client's view by accident.")} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('20 Aug 2026')}</span><h2>{t('Oversize images, duplicating an image, free caption & a new layout')}</h2></div>
+      <ul>
+        <li set:html={t('<b>20 × 30 on DIN A4 paper — now that works.</b> When the size you want is larger than the sheet, the tool no longer just says “does not fit”, it offers two ways out: <b>Oversize</b> places the image centred on the whole sheet — whatever hangs over is missing afterwards, and how much that is is stated beforehand (for 20 × 30 cm on A4 it is exactly 3 mm in height). <b>Poster print</b> spreads the image over several sheets; the tiles overlap by a glue flap that is marked with a dashed line, and every sheet carries its number with row and column. 30 × 40 cm on A4 gives 2 × 2 sheets.')} />
+        <li set:html={t('<b>Duplicate an image.</b> One button copies the same image so it can go onto the same sheet at a second size — a portrait once at 10 × 15 and once as a passport photo on one sheet of photo paper, say. No more renaming and uploading again.')} />
+        <li set:html={t('<b>Decide the caption yourself.</b> The small line under the sheet can be switched off, given your own text and placed in one of six spots (top or bottom, left, centre or right). If there is no room free at the chosen edge it is dropped automatically — nothing is ever printed over an image.')} />
+        <li set:html={t('<b>A new layout on the desktop:</b> work on the left, the preview on the right, following along as you scroll. The setting groups sit next to each other collapsed and open across the full width. No more endless column beside an empty one.')} />
+        <li set:html={t('<b>Like an app on a phone:</b> the preview is at the top, “Create print PDF” sits as a fixed bar above the navigation, every image row shows preview and sliders side by side, and every button is thumb-sized. Tablet widths were checked separately.')} />
+        <li set:html={t('<b>A public tour page</b> at <code>/tour</code> — it describes the print module without a login and without any controls, meant for showing the tool and for a possible open-source release.')} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('19 Aug 2026')}</span><h2>{t('“Passport photos” becomes “Print” — 86 image sizes, crop repaired')}</h2></div>
+      <ul>
+        <li set:html={t('<b>The area is now called “Print”</b> (it was “Passport photos”) — it does far more than passport photos, after all. Old links redirect automatically.')} />
+        <li set:html={t('<b>86 image sizes in 10 groups:</b> passport, small, photo, inches (US), instant, poster &amp; frame, square, DIN, cards and plain aspect ratios — plus 19 paper sizes and a custom size at any time.')} />
+        <li set:html={t('<b>Fixed: the crop showed the image distorted.</b> The frame in the crop window did not have the target aspect ratio, which squeezed the image into it (measured: 8.3% too wide). Frame and image now both compute from the same ratio.')} />
+        <li set:html={t('<b>Fixed: “I cannot move the image.”</b> Technically you could, but with the frame fully filled the crop sits against the stop in one direction — dragging did nothing there. It now says which way the image can still move; double-tap zooms, the arrow keys nudge, and the zoom slider shows its factor.')} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('18 Aug 2026')}</span><h2>{t('New: Print — bring images to exact sizes, entirely without AI')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Exact sizes instead of “roughly”.</b> A passport photo is 35 × 45 mm, a frame is 13 × 18 cm. The tool computes in millimetres and produces a PDF whose page is exactly the sheet size and in which every image is exactly its target size. When printing, choose “Actual size / 100%” — not “fit to page”.')} />
+        <li set:html={t('<b>Several images on one sheet.</b> Images of the same size go into an exact grid; with mixed formats a packer arranges them so that as few sheets as possible are needed. One 13 × 18, one 9 × 13 and six passport photos fit together on a single DIN A4 sheet.')} />
+        <li set:html={t('<b>Crop marks as in prepress:</b> fine corner marks outside each image, or continuous lines across the whole sheet — broken where another subject lies. Length, offset and bleed can be set.')} />
+        <li set:html={t('<b>Crop or letterbox.</b> If the aspect ratio does not fit, you decide: crop until the format is filled, or fit the whole image and leave a border colour around it. Nothing is ever distorted. The crop can be moved and zoomed in the crop window; the rotation of phone photos (EXIF) is taken into account beforehand.')} />
+        <li set:html={t('<b>Any paper you like:</b> DIN A7 to A0, photo paper 9 × 13 to 20 × 30, US sizes — or a paper size of your own. Borderless, 5 mm or 10 mm margin.')} />
+        <li set:html={t('<b>Presets</b> for recurring sheets (school photo set, small prints, passport sheet, 2 × 10×7.5 on photo paper) — and your own can be saved.')} />
+        <li set:html={t('<b>Reachable through Telegram and the MCP server</b> as well, and the finished sheet can be delivered straight to the delivery target or to a backup target.')} />
+        <li set:html={t('<b>No AI, no cost:</b> plain geometry, in house. No model, no key, no images that leave the server.')} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('24 Jul 2026')}</span><h2>{t('JPG delivery, custom sizes, failed jobs & AI-readable docs')}</h2></div>
+      <ul>
+        <li set:html={t('<b>The delivery target gets exactly your format:</b> what is delivered is now exactly the file format you set — globally in the admin settings <i>or</i> per job in the studio (PNG or JPG). No more forced conversion. Cut-out subjects always stay PNG. (The images that had “disappeared” in the meantime were there the whole time, by the way — it was the sort order in the target’s web interface.)')} />
+        <li set:html={t('<b>Telegram & MCP keep up:</b> the Telegram bot and the MCP server (for assistants) now know the selectable file format and the custom sizes too — whichever way you start a job.')} />
+        <li set:html={t('<b>Delete a job</b> straight from the queue (for old or failed jobs). Missing sources now report a clear notice instead of a cryptic technical error.')} />
+        <li set:html={t('<b>AI-readable docs</b> at <code>/llms.txt</code> — describing purpose, formats, API and MCP tools for assistants.')} />
+        <li set:html={t('<b>The file format can be chosen:</b> globally in the admin settings (default file format PNG/JPG) <i>and</i> per conversion in the studio (default / PNG / JPG). JPG only without transparency.')} />
+        <li set:html={t('<b>Custom sizes:</b> in the studio, “Custom size (cm)” — just type <code>25x35</code>, say; for stickers one number is enough (<code>5</code> = 5×5 cm). Preset recipes store that too.')} />
+        <li set:html={t('<b>Failed jobs are now red</b> in the overview (they used to be green) and carry the reason. Fixed: the “Sticker 5 cm” preset recipe led nowhere (“Unknown format: sticker5”).')} />
+        <li set:html={t('<b>Finish time in the job:</b> the queue and the job show when it was done.')} />
+        <li set:html={t('<b>Clean file names:</b> no more doubled date and UUID chains in the name.')} />
+        <li set:html={t('<b>Metadata sidecar per target:</b> whether the <b>.md</b> file is sent along can be switched separately for the delivery target, the backup mirror and every extra target.')} />
+        <li set:html={t('<b>Faster loading:</b> the full view and the preview come as a small JPG (about 5× smaller), tiles load a thumbnail first; missing thumbnails can be generated afterwards with a button.')} />
+        <li set:html={t('<b>Delivery-target tools in Admin:</b> “Show folders” (what sits where over SFTP) and “Clean up leftovers” (remove .tmp files left behind).')} />
+      </ul>
+    </section>
+
+    <section>
+      <div class="ver"><span class="tag">{t('23 Jul 2026')}</span><h2>{t('Combine, Generate & a second backup')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Combine:</b> several images plus a description into one new image (for example “… with our dog”).')} />
+        <li set:html={t('<b>Generate:</b> images from text alone, with no source image at all.')} />
+        <li set:html={t('<b>The Frame “Extend”:</b> generate more scene around the subject (outpainting) instead of only cropping.')} />
+        <li set:html={t('<b>Keep editing:</b> take a finished image as a new source and edit it again.')} />
+        <li set:html={t('<b>Alternatives:</b> generate further versions of the same image — grouped, with a switcher.')} />
+        <li set:html={t('<b>Folders:</b> filter, rename and delete in the library; each folder can have its own folder on the target.')} />
+        <li set:html={t('<b>Bulk actions:</b> download several images as a ZIP and move them into a folder in one go.')} />
+        <li set:html={t('<b>Thumbnails</b> for the library (fast & frugal).')} />
+        <li set:html={t('<b>Models:</b> quality levels including open source (FLUX.2); the model used is shown.')} />
+        <li set:html={t('<b>Colour flags</b> like the ones on the delivery target (red / orange / green / final): set them per image and filter by them afterwards — the flag is also in the accompanying .md file.')} />
+        <li set:html={t('<b>“Download” opens large:</b> a tap on “Download” shows the image filling the screen — on an iPhone or iPad, press and hold, then <b>“Save to Photos”</b> (the classic file download is there as well).')} />
+        <li set:html={t('<b>Permissions & privacy:</b> visibility can be set (everyone sees only their own images, or “everyone sees everything”), generations optionally anonymous, the admin sees everything.')} />
+        <li set:html={t('<b>Private session:</b> generate only, then forget — no library entry, no delivery or backup, no stored prompt. The admin can allow it globally or enforce it per user.')} />
+        <li set:html={t('<b>NSFW switch:</b> models marked NSFW are only selectable and visible when the admin setting is on.')} />
+        <li set:html={t('<b>Convert (one image + text):</b> convert a single image with a description — “photo → oil painting”, say — and bring it to size right away. No more having to upload two images.')} />
+        <li set:html={t('<b>Several output targets:</b> any number of further FTP/SFTP targets besides the standard delivery target; under “Where to?” in the studio the <b>backup mirror</b> and individual FTP targets can be chosen too; a preset recipe or folder can point at one target permanently.')} />
+        <li set:html={t('<b>Backup to every target:</b> not just the mirror — any target can be marked as “backup”; “Back up all images” mirrors to every backup target.')} />
+        <li set:html={t('<b>Metadata sidecar:</b> optionally an <b>.md file</b> (prompt, model, format …) alongside every image on the delivery target, the mirror or FTP.')} />
+        <li set:html={t('<b>Prompt display:</b> every generated image shows its prompt in the library (with a copy button).')} />
+        <li set:html={t('<b>Manage preset recipes yourself:</b> save the current settings as a recipe, load it, delete it.')} />
+        <li set:html={t('<b>API token & MCP server:</b> external access — hand images from a folder or from iMessage to Klarbild through an assistant.')} />
+        <li set:html={t('<b>The Frame</b> now delivers automatically into the folder <b>“TheFrame-Backgrounds”</b> on the target.')} />
+        <li set:html={t('<b>A second backup (the mirror):</b> every result additionally goes to the backup mirror over SFTP/FTPS (Tailscale works too) — with a “Mirror ✓” marker and “Back up all images to the mirror”.')} />
+        <li set:html={t('<b>Storage management:</b> thumbnails, deleting sources, an automatic retention period.')} />
+        <li set:html={t('<b>Telegram entirely button-driven:</b> a permanent keyboard & menu — Edit, Combine, “✨ New image”, Keep editing, with no commands at all.')} />
+        <li set:html={t('<b>Reset:</b> empty the library & jobs cleanly (with a confirmation).')} />
+        <li set:html={t('<b>A help page</b> and this changelog.')} />
+        <li>{t('Under the hood: a real cost cap, reliable job completion, a reachability check for the mirror.')}</li>
+      </ul>
+    </section>
+  </div>
+
+  <style>
+    .clog{max-width:760px;margin:0 auto;}
+    .chead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+    .clog h1{font-family:var(--font-display);font-size:1.7rem;letter-spacing:-.02em;margin:6px 0 4px;}
+    .back{color:var(--accent);text-decoration:none;font-size:.9rem;}
+    .lead{color:var(--soft);margin:4px 0 20px;}
+    .clog section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+    .ver{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+    .ver h2{font-size:1.05rem;margin:0;}
+    .tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;background:var(--accent-bg);color:var(--accent);padding:3px 9px;border-radius:20px;}
+    .clog ul{margin:0;padding-left:20px;line-height:1.65;}
+    .clog li{margin-bottom:6px;}
+  </style>
+</Base>

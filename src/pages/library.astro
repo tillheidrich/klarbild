@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import LibraryApp from '../components/LibraryApp.tsx';
+import { tFor, dictFor } from '../lib/i18n.server';
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+---
+<Base title={t('Library · Klarbild')}>
+  <h1 class="page-title">{t('Library')}</h1>
+  <LibraryApp client:load locale={locale} dict={dict} />
+  <style>.page-title{font-family:var(--font-display);font-size:1.6rem;margin:6px 0 16px;letter-spacing:-.02em;}</style>
+</Base>

@@ -1,0 +1,7 @@
+.git
+node_modules
+dist
+.astro
+*.log
+.env
+# Do NOT ignore migrations/ — they are read at runtime, on every boot.

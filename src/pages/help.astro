@@ -1,0 +1,147 @@
+---
+import Base from '../layouts/Base.astro';
+import { tFor, dictFor } from '../lib/i18n.server';
+const locale = Astro.locals.locale ?? 'en';
+const t = tFor(locale);
+const dict = dictFor(locale);
+---
+<Base title={t('Help · Klarbild')}>
+  <div class="howto">
+    <div class="hhead">
+      <h1>{t('How Klarbild works')}</h1>
+      <div class="hhead-actions">
+        <a class="print-btn" href="/changelog">{t('Changelog')}</a>
+        <button class="print-btn" onclick="window.print()">{t('Save as PDF / print')}</button>
+      </div>
+    </div>
+    <p class="lead">{t('Screenshots and things you found turn into print-ready images — cleaned up, cut out, in the right format, optionally delivered straight to the delivery target. Everything works through the website and through Telegram.')}</p>
+
+    <section>
+      <h2>{t('1 · Edit an image')}</h2>
+      <ol>
+        <li set:html={t('Choose <b>Edit</b> at the top of the <b>studio</b>.')} />
+        <li>{t('Upload screenshots — drag them in, paste with ⌘/Ctrl + V or tap (up to 100 at once).')}</li>
+        <li set:html={t('Choose what should happen: <b>Clean up</b> (frame, wall, shop interface gone), <b>Cut out</b> (subject free, background transparent), <b>Format</b> (30 × 40 cm or The Frame, for instance), <b>Contour</b> (white sticker edge).')} />
+        <li set:html={t('For the format, choose “<b>Crop</b>” or “<b>Extend</b>” — extending generates more scene around the subject (outpainting), which is ideal for The Frame.')} />
+        <li set:html={t('Choose the <b>quality</b> and where it goes (<b>library</b>, <b>delivery target</b> or both), then <b>Start</b>.')} />
+      </ol>
+    </section>
+
+    <section>
+      <h2>{t('2 · Combine several images')}</h2>
+      <p set:html={t('<b>Combine</b> mode: upload at least two images and describe what should come out of them — “the pool picture, but with our dog at the edge”, say. The first image is the lead scene, the others supply people or objects. The result is a new, composed image.')} />
+    </section>
+
+    <section>
+      <h2>{t('3 · A new image from text')}</h2>
+      <p set:html={t('<b>Generate</b> mode: no source image at all, just a description. The more precise the text, the better the result.')} />
+    </section>
+
+    <section>
+      <h2>{t('4 · Library, folders, alternatives & keep editing')}</h2>
+      <p set:html={t('Every result lands in the <b>library</b>. The folder bar at the top filters by folder; each folder can be given its own folder on the delivery target (an arrow on the folder means it has one).')} />
+      <ul>
+        <li set:html={t('<b>+ Alternative</b>: generates another version of the same image. The versions sit together as a group and can be switched with the thumbnail strip (badge “Version 2/3”).')} />
+        <li set:html={t('<b>Keep editing</b>: takes a finished image into the studio as a new source — edit it again there, bring it to the next format, or mix it with further images in Combine mode.')} />
+        <li set:html={t('<b>Before/after</b>: shows the comparison source ↔ result (not available for images made from text alone).')} />
+        <li set:html={t('<b>Manage folders</b>: tap the folder chip, then ✎ to rename it (including its folder on the target) or ✕ to delete it (the images are kept).')} />
+        <li set:html={t('<b>Several at once</b>: select images, then <b>download them as a ZIP</b> or move them <b>into a folder</b> together.')} />
+      </ul>
+      <p class="notice" set:html={t("<b>File names are unique.</b> Every result is called <code>YYYY-MM-DD_HHMMSS_subject_format_shortid</code>, for example <code>2026-08-20_143207_ada-badge_the-frame_a3f9.jpg</code>. Because date and time come first, every file listing — the delivery target, the backup mirror, the file manager — sorts chronologically by itself. The short id at the end comes from the image's id: <b>two images can no longer overwrite each other on delivery</b>, even if you generate the same subject in the same format twice on one day. (Before 21 Aug 2026 that was different — the first image was lost in such a case. Under <b>Admin → File names</b> the existing library can be renamed after the fact.)")} />
+    </section>
+
+    <section>
+      <h2>{t('5 · Print — exact sizes and crop marks (without AI)')}</h2>
+      <p class="lead" set:html={t('The <b>Print</b> tab is the photo-lab part of Klarbild: no model, no cost, no waiting. Only cropping, scaling and geometry — from the biometric passport photo to the 30 × 40 poster.')} />
+      <ol>
+        <li set:html={t('Upload images (drag them in, ⌘/Ctrl + V) — or <b>Choose from the library</b>: everything Klarbild has already produced, with search, by folder and several at once. No more detour through another upload.')} />
+        <li set:html={t('Choose the <b>final size</b> for each image. <b>Every format from AI generation</b> is here — biometric passport photo 35 × 45 mm, 2 × 3 to 6 × 9 cm, 9 × 13 to 24 × 30, poster and frame sizes 30 × 40 to 70 × 100, squares, DIN A6–A2 and the aspect ratios (16:9 “The Frame”, 9:16, 3:2, 4:3, 5:4) — or a <b>custom size</b>: <code>12x15</code> (cm), <code>35x45mm</code>, <code>5</code> (= 5 × 5 cm) or <code>4:3/15</code> (ratio 4:3, longer edge 15 cm).')} />
+        <li set:html={t('<b>If the image does not fit the format</b>, you decide for each image: <b>Crop</b> (the format is filled, something is missing at the edges — the default) or <b>Letterbox</b> (the whole image stays visible, with the <b>border colour</b> around it — white, black, paper-coloured or freely chosen). <b>Nothing is ever distorted.</b>')} />
+        <li set:html={t('Tap the preview image → <b>Crop</b>: pan and zoom. The aspect ratio stays locked to the target format, and nothing is ever distorted.')} />
+        <li set:html={t('Set the <b>quantity</b> per image — that is how the passport-photo or school photo set comes about.')} />
+        <li set:html={t('<b>The same image at two sizes?</b> Tap <b>Duplicate</b> — the image appears a second time in the list and gets its own size there. No more renaming and uploading again.')} />
+        <li set:html={t('Choose the <b>paper size</b>: DIN A6–A2 including <b>A3+ (329 × 483 mm)</b>, photo paper cuts 9 × 13 to 20 × 30, US Letter/Legal — or a paper size of your own.')} />
+        <li set:html={t('<b>Cutting guides</b>: <b>corner marks</b> (fine marks outside the final format, as in Photoshop and InDesign) or <b>continuous lines</b> across the whole sheet for the cutting ruler. The continuous lines never run through another subject.')} />
+        <li set:html={t('<b>If the final size is larger than the sheet</b> — 20 × 30 cm on DIN A4 photo paper, say — the question of how to go on appears right at the image: <b>Oversize</b> places the image centred on the whole sheet and what hangs over is cut off (for 20 × 30 on A4 exactly 3 mm in height are missing, and that is exactly what it says), or <b>Poster print</b> spreads it across several sheets to be glued together.')} />
+        <li set:html={t('<b>Create the print PDF</b>. The PDF page is exactly the sheet size.')} />
+      </ol>
+      <p set:html={t('<b>Printed recently.</b> At the very bottom you can see what you printed before — with sizes, quantity and the images. <b>Print again</b> produces exactly the same sheet a second time, without you setting anything up again; <b>Reuse settings</b> brings back only the paper, the marks and the margins, for “like last time, but with different photos”.')} />
+      <p class="mini" set:html={t('What is kept is <b>not the PDFs</b> — those are huge, an A3 sheet is quickly 20 to 80 MB — but only the settings, a few kilobytes. Because the print module computes without AI, the same job yields exactly the same sheet again. That is why “Print again” only appears when all the images came from the library and are still there; with uploaded files the source is gone once it has been cleaned up, and the entry says so.')} />
+      <p class="notice" set:html={t('<b>Important when printing:</b> in the print dialog choose “Actual size” or “100%” — <b>not</b> “fit to page”. Otherwise the size no longer holds. If you can print borderless, set the margin to 0; otherwise 3–5 mm, or the printer cuts the marks away.')} />
+      <ul>
+        <li set:html={t('<b>Bleed</b> (0–10 mm): the image extends past the cut edge so that a slightly crooked cut leaves no white border. The gap between two images grows with it automatically.')} />
+        <li set:html={t('<b>Poster print</b>: when the image is spread across several sheets, the tiles overlap by a <b>glue flap</b> (10 mm by default, freely adjustable). The flap is printed on both neighbouring sheets and marked with a dashed line — when assembling, you lay one sheet onto the other along that line. Every sheet carries its number with row and column at the top. 30 × 40 cm on A4 gives 2 × 2 sheets.')} />
+        <li set:html={t('<b>Caption</b>: by default a small line under the sheet carries the sizes, the dpi and the printing note. It can be <b>switched off</b>, given <b>your own text</b> (“Ada · August 2026”, say) and placed in one of six spots — top or bottom, each of them left, centre or right. If there is no room free at the chosen edge it is dropped automatically; it is never printed over an image.')} />
+        <li set:html={t('<b>Download singly</b>: one image at exactly its size as PNG/JPG with dpi metadata — without a sheet.')} />
+        <li set:html={t('<b>Resolution warning</b>: if the source is not enough for the chosen dpi, it says so in red under the image.')} />
+        <li set:html={t('<b>Presets</b>: save the whole sheet setup (paper, marks, formats, quantities). Bundled are <b>School photo set (A4)</b> (1 × 13 × 18, 2 × 9 × 13, 8 × passport photo — deliberately more than fits on one sheet; the preview tells you how many sheets it becomes), <b>Small prints (A4)</b>, <b>Passport sheet 35 × 45 (A4)</b> and <b>2 × 10×7.5 on 10×15 photo paper</b>. If you load a multi-format preset with only <i>one</i> image, that image is taken over for every format automatically — one click, a finished set.')} />
+        <li set:html={t('<b>Margin profiles</b>: <b>Borderless</b> (0 mm), <b>Standard</b> (5 mm) or <b>Safe</b> (10 mm) at the press of a button; the exact value stays freely editable.')} />
+        <li set:html={t('<b>Where to?</b>: the finished sheet can also be put on the delivery target, on the backup mirror or on an extra target — like the images from the studio.')} />
+        <li set:html={t('<b>Automatic arrangement</b>: images of the same size make a clean grid; with mixed sizes the small ones are placed automatically into the space left beside the large ones.')} />
+      </ul>
+      <p class="mini" set:html={t('Through Telegram as well: send an image → “🖨 Print” → tap size and quantity → the PDF comes back. On a phone the preview is at the top and “Create print PDF” sits within reach as a fixed bar above the navigation; on a computer you work on the left and see on the right what comes out of it. To show someone the tool without anything being uploadable, send them the link to <a href="/tour">the tour page</a>.')} />
+    </section>
+
+    <section>
+      <h2>{t('6 · Everything through Telegram — without commands')}</h2>
+      <p>{t('Pair it once: generate a code in Admin and enter it in the chat with the bot. After that everything runs through the buttons at the bottom of the chat — no need to type commands.')}</p>
+      <ul>
+        <li set:html={t('<b>Edit:</b> send the image or images (best as a <i>file</i> for full quality) → tap the preset recipe at the bottom.')} />
+        <li set:html={t('<b>Combine:</b> send two or more images, put a description such as “with our dog” in the image caption field — then tap “🔀 Combine”. (Without a description the bot asks for one.)')} />
+        <li set:html={t('<b>Generate:</b> tap “✨ New image” at the bottom and describe what should come out.')} />
+        <li set:html={t('<b>Keep editing:</b> simply send a finished image from the bot back to it.')} />
+        <li set:html={t('<b>Print sheet (without AI):</b> send an image → “📐 Print sheet” → tap the final size and the quantity. Back comes an A4 PDF with crop marks at 100% size.')} />
+        <li set:html={t('“❓ Help” gives the short guide, “📁 Choose recipe” sets the default preset recipe.')} />
+      </ul>
+      <p class="mini">{t('For power users there is also the “/” command menu (/new, /presets, /status) — it is not needed.')}</p>
+    </section>
+
+    <section>
+      <h2>{t('7 · Backup & a clean restart (Admin)')}</h2>
+      <p set:html={t('In the admin area a <b>second backup to the mirror</b> can be set up (SFTP/FTPS, Tailscale works too) — every finished image is then mirrored as well and marked <b>“Mirror ✓”</b> in the library. <b>“Back up all existing images to the mirror”</b> catches up on older images.')} />
+      <p set:html={t('Under <b>“File names”</b> the existing library can be brought onto the unique naming scheme. <b>“Check library”</b> first shows what would change and how many names are currently used twice; <b>“Rename now”</b> carries it out. The image files themselves are left untouched — they sit in storage under their id, not under their name. A second run changes nothing. <b>“Deliver again”</b> then uploads every already delivered image under its new name; the old files stay on the delivery target and you clear them away there yourself.')} />
+      <p set:html={t('For clearing out there is <b>“Reset library &amp; jobs”</b>: it deletes all images, jobs and folders (users, settings, models and preset recipes remain) — with a confirmation. Best to back up to the mirror once beforehand.')} />
+    </section>
+
+    <section>
+      <h2>{t('My account, sharing & email')}</h2>
+      <ul>
+        <li set:html={t('<b><a href="/account">My account</a></b>: store an email address — that lets you have a new password sent to you if you forget yours. You can also switch on a short mail as soon as a job is finished.')} />
+        <li set:html={t('<b>Share</b>: in the library, tap <b>Share</b> — for one image or for several selected ones at once. The result is a link that someone <b>without a Klarbild account</b> can open too; from there the image can be downloaded at full resolution.')} />
+        <li set:html={t('<b>Pass it on</b> via <b>WhatsApp</b> (opens WhatsApp with the text ready), through your own mail program, or by email straight out of Klarbild to several recipients.')} />
+        <li set:html={t('<b>All at once</b>: if a link holds several images, the top of the page offers <b>“Download all N images”</b> — a ZIP at full resolution. Very large collections are cut off at 500 MB; a note about that is then in the package.')} />
+        <li set:html={t('<b>Staying safe</b>: every link expires by itself (30 days by default), can be <b>switched off</b> at any time and protected with a <b>passphrase</b> if you want. Send the passphrase separately from the link — otherwise it is of no use.')} />
+        <li set:html={t('<b><a href="/shares">Shared links</a></b>: an overview of everything that is open right now — with views and downloads. What is recorded is <b>when</b> and <b>with what</b> a link was opened, not <b>who</b> opened it: the IP address is only kept hashed and cannot be computed back.')} />
+        <li set:html={t('<b>Forgot your password?</b> At the bottom of the sign-in page, on “Forgot your password?” — the link from the mail is valid for one hour and can only be used once.')} />
+      </ul>
+      <p class="mini" set:html={t('Images from a <b>private session</b> deliberately cannot be shared and do not trigger a notification either.')} />
+    </section>
+
+    <section>
+      <h2>{t('Tips')}</h2>
+      <ul>
+        <li>{t('For printing always choose 300 dpi and a cm format — the pixel dimensions are right there next to it.')}</li>
+        <li set:html={t('In Telegram send images as a <i>file</i>, not as a photo — otherwise Telegram compresses them.')} />
+        <li>{t('Stickers: choose Cut out + Contour together.')}</li>
+      </ul>
+    </section>
+  </div>
+
+  <style>
+    .howto{max-width:760px;margin:0 auto;}
+    .hhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+    .howto h1{font-family:var(--font-display);font-size:1.7rem;letter-spacing:-.02em;margin:6px 0 4px;}
+    .hhead-actions{display:flex;gap:8px;align-items:center;}
+    .print-btn{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer;font-family:inherit;font-size:.85rem;color:var(--ink);text-decoration:none;}
+    .lead{color:var(--soft);line-height:1.6;margin:4px 0 20px;}
+    .howto section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+    .howto h2{font-size:1.05rem;margin:0 0 10px;}
+    .howto ol,.howto ul{margin:0;padding-left:20px;line-height:1.65;}
+    .howto li{margin-bottom:6px;}
+    .howto code{font-family:var(--font-mono);font-size:.85em;background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:1px 5px;}
+    .howto .mini{font-size:.82rem;color:var(--soft);margin:8px 0 0;}
+    .howto .notice{background:var(--accent-bg);border-left:3px solid var(--accent);padding:10px 13px;margin:12px 0;font-size:.92rem;line-height:1.55;}
+    .howto code{font-family:var(--font-mono);font-size:.85em;background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:1px 5px;}
+    @media print{.topbar,.tabbar,.print-btn{display:none !important;}.howto section{break-inside:avoid;}}
+  </style>
+</Base>

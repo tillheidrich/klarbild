@@ -1,0 +1,70 @@
+/* Klarbild — Design-Tokens (OKLCH; siehe 06 §6). Identity:
+   Space Grotesk + Space Mono, kräftiges Blau, warmes Papier/Karte, Passermarke,
+   scharfe Ecken, technisch-editorial. Fonts self-hosted (kein Google/US). */
+:root {
+  /* Flächen (Papier/Karte) */
+  --paper:   oklch(92.8% 0.005 95);    /* #EAEAE3 */
+  --card:    oklch(98.4% 0.004 95);    /* #FBFBF7 */
+  --surface: var(--card);
+  --line:    oklch(86.8% 0.007 95);    /* #D7D6CC */
+  --mark:    oklch(70% 0.006 95);      /* #A7A69B Passermarke */
+
+  /* Text */
+  --ink:      oklch(21% 0.01 95);      /* #16150F */
+  --ink-soft: oklch(49% 0.008 95);     /* #6A685D */
+  --soft:     var(--ink-soft);
+
+  /* Akzent — kräftiges Blau */
+  --accent:   oklch(45% 0.23 267);     /* #1B3BE0 */
+  --accent-2: oklch(38% 0.21 267);     /* #122BA8 */
+  --accent-bg: oklch(45% 0.23 267 / 0.06);
+
+  /* Zustände */
+  --ok:   oklch(60% 0.15 150);
+  --warn: oklch(72% 0.15 75);
+  --err:  oklch(55% 0.19 25);
+
+  /* Form */
+  --radius:    4px;
+  --radius-sm: 3px;
+  --shadow: 0 1px 2px oklch(21% 0.01 95 / 0.05);
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+  --maxw: 1060px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+
+/* Mono-Label (uppercase, gesperrt) — durchgängiges UI-Motiv */
+.mono-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--soft);
+}
+
+/* Passermarke (Kreuz) — Markenelement */
+.regmark { width: 15px; height: 15px; position: relative; display: inline-block; }
+.regmark::before, .regmark::after { content: ''; position: absolute; background: var(--accent); }
+.regmark::before { left: 50%; top: 0; width: 1.5px; height: 100%; transform: translateX(-50%); }
+.regmark::after { top: 50%; left: 0; height: 1.5px; width: 100%; transform: translateY(-50%); }
+
+/* Mobile-First: 16px-Felder gegen iOS-Zoom beim Fokus */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+/* Taktiles Feedback auf allen Buttons */
+button { transition: transform 0.06s ease; }
+button:active { transform: scale(0.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
