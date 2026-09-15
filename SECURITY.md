@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please do **not** open a public issue. Mail **security@heidrich-digital.de** with
+Please do **not** open a public issue. Mail **mail@tillheidrich.de** with
 what you found and how to reproduce it. You will get an acknowledgement within a
 few days. There is no bounty programme — this is a one-person project — but
 credit in the release notes is yours if you want it.
