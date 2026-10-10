@@ -4,7 +4,7 @@ import { query, one } from '../../../lib/db';
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const total = await one<{ n: string }>(`SELECT count(*)::text n FROM items WHERE status='done'`);
+  const total = await one<{ n: string }>(`SELECT count(*)::text n FROM items WHERE status='done' AND deleted_at IS NULL`);
   const failed = await one<{ n: string }>(`SELECT count(*)::text n FROM items WHERE status='failed'`);
   const cost = async (days: number | null) => (await one<{ c: string }>(
     `SELECT COALESCE(sum(cost),0)::text c FROM items WHERE cost IS NOT NULL` +

@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
       break;
     case 'retry-failed': {
       const items = await query<{ id: string }>(
-        `UPDATE items SET status='queued', error_message=NULL WHERE job_id=$1 AND status='failed' RETURNING id`, [id]);
+        `UPDATE items SET status='queued', error_message=NULL WHERE job_id=$1 AND status='failed' AND deleted_at IS NULL RETURNING id`, [id]);
       await query(`UPDATE jobs SET status='queued', failed_count=0 WHERE id=$1`, [id]);
       for (const it of items) await enqueue({ itemId: it.id, jobId: id });
       break;

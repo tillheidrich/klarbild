@@ -153,14 +153,16 @@ export async function shareItems(shareId: string): Promise<ShareBild[]> {
     `SELECT i.id, i.filename, i.output_px, i.created_at
        FROM share_items si
        JOIN items i ON i.id = si.item_id
-      WHERE si.share_id = $1 AND i.status = 'done' AND i.result_path IS NOT NULL
+      WHERE si.share_id = $1 AND i.status = 'done' AND i.result_path IS NOT NULL AND i.deleted_at IS NULL
       ORDER BY si.position, i.created_at`, [shareId]);
 }
 
 /** Does this image belong to this link? Cross-check before every delivery. */
 export async function shareHasItem(shareId: string, itemId: string): Promise<boolean> {
   const r = await one<{ item_id: string }>(
-    'SELECT item_id FROM share_items WHERE share_id=$1 AND item_id=$2', [shareId, itemId]);
+    // An image in the trash is not part of any link until it is restored.
+    `SELECT si.item_id FROM share_items si JOIN items i ON i.id = si.item_id
+      WHERE si.share_id=$1 AND si.item_id=$2 AND i.deleted_at IS NULL`, [shareId, itemId]);
   return !!r;
 }
 
@@ -233,7 +235,7 @@ export async function listShares(userId: string | null, isAdmin: boolean): Promi
     // share_views: with many accesses this page turned sluggish otherwise.
     `SELECT s.*,
             (SELECT count(*)::int FROM share_items si JOIN items i ON i.id = si.item_id
-              WHERE si.share_id = s.id AND i.status='done' AND i.result_path IS NOT NULL) AS count,
+              WHERE si.share_id = s.id AND i.status='done' AND i.result_path IS NOT NULL AND i.deleted_at IS NULL) AS count,
             s.visitor
        FROM shares s
       WHERE $2::boolean OR s.created_by = $1

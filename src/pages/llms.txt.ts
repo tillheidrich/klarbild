@@ -68,6 +68,10 @@ world such a module does not exist.
 - GET  /api/jobs — the most recent jobs. GET /api/jobs/:id — job plus items (incl. error_message, finished_at).
 - POST /api/jobs/:id/{pause|resume|cancel|retry-failed|delete}.
 - POST /api/items/:id/{retry|reuse|alternative}.
+- DELETE /api/items/:id — moves the image into the trash (restorable for settings.trash_days, default 30).
+  ?purge=1 removes an image that is already in the trash for good.
+- GET  /api/trash — the trash, with days_left per image. POST /api/trash { action: trash|restore|purge, ids[] }.
+  DELETE /api/trash — empty it. Only your own images (admins: all).
 - GET  /api/items/:id/file — the result image. Query: ?thumb=1 (preview), ?preview=1 (small JPG for full screen),
   ?download=1 (as a file), ?src=1 (the source). The content type is taken from the magic bytes (PNG/JPG/WEBP).
 

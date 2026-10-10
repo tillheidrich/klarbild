@@ -62,7 +62,7 @@ export const GET: APIRoute = async ({ params, request, clientAddress }) => {
 
   const paths = await query<{ id: string; result_path: string; filename: string | null }>(
     `SELECT id, result_path, filename FROM items
-      WHERE id = ANY($1::uuid[]) AND result_path IS NOT NULL`,
+      WHERE id = ANY($1::uuid[]) AND result_path IS NOT NULL AND deleted_at IS NULL`,
     [images.map((b) => b.id)]);
   const byId = new Map(paths.map((p) => [p.id, p]));
 

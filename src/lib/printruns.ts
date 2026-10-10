@@ -100,7 +100,7 @@ export async function recordRun(e: RunInput): Promise<string | null> {
     await query(
       `INSERT INTO print_run_items (run_id, item_id)
        SELECT $1, x FROM unnest($2::uuid[]) AS x
-        WHERE EXISTS (SELECT 1 FROM items WHERE id = x)
+        WHERE EXISTS (SELECT 1 FROM items WHERE id = x AND deleted_at IS NULL)
        ON CONFLICT DO NOTHING`, [run.id, ids]).catch((err) =>
       console.error('[printruns] image references not stored:', err?.message || err));
   }
@@ -143,7 +143,7 @@ export async function listRuns(userId: string | null, isAdmin: boolean, limit = 
   const images = await query<{ run_id: string; id: string; filename: string | null }>(
     `SELECT ri.run_id, i.id, i.filename
        FROM print_run_items ri JOIN items i ON i.id = ri.item_id
-      WHERE ri.run_id = ANY($1::uuid[]) AND i.status = 'done' AND i.result_path IS NOT NULL`,
+      WHERE ri.run_id = ANY($1::uuid[]) AND i.status = 'done' AND i.result_path IS NOT NULL AND i.deleted_at IS NULL`,
     [runs.map((r) => r.id)]);
 
   const byRun = new Map<string, { id: string; filename: string | null }[]>();

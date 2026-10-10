@@ -61,9 +61,15 @@ export interface ProcessResult { ok: boolean; cost: number; error?: string; }
 
 /** Processes one item completely and updates its record. */
 export async function processItem(itemId: string): Promise<ProcessResult> {
-  const item = await one<{ id: string; job_id: string; source_path: string | null; source_paths: string[] | null; filename: string | null }>(
-    'SELECT id, job_id, source_path, source_paths, filename FROM items WHERE id=$1', [itemId]);
+  const item = await one<{ id: string; job_id: string; source_path: string | null; source_paths: string[] | null; filename: string | null; deleted_at: string | null }>(
+    'SELECT id, job_id, source_path, source_paths, filename, deleted_at FROM items WHERE id=$1', [itemId]);
   if (!item) return { ok: false, cost: 0, error: 'Item not found' };
+  // Moved to the trash while it was still waiting: do not pay a model for an
+  // image nobody wants any more.
+  if (item.deleted_at) {
+    await query(`UPDATE items SET status='skipped' WHERE id=$1 AND status IN ('queued','running')`, [itemId]);
+    return { ok: true, cost: 0 };
+  }
 
   const job = await one<{ recipe_snapshot: RecipeSnapshot; mode: Mode; private: boolean }>(
     'SELECT recipe_snapshot, mode, private FROM jobs WHERE id=$1', [item.job_id]);

@@ -80,6 +80,6 @@ export async function deliverItem(itemId: string): Promise<{ ok: boolean; messag
 /** Work through all deliveries of a job that are still open (pending). */
 export async function deliverPendingForJob(jobId: string): Promise<void> {
   const items = await query<{ id: string }>(
-    `SELECT id FROM items WHERE job_id=$1 AND delivery_status='pending' AND status='done'`, [jobId]);
+    `SELECT id FROM items WHERE job_id=$1 AND delivery_status='pending' AND status='done' AND deleted_at IS NULL`, [jobId]);
   for (const it of items) await deliverItem(it.id);
 }

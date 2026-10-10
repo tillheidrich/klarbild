@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   const isAdmin = locals.user.role === 'admin';
   const shared = s?.library_visibility === 'shared';
   // Private jobs never show up in the library; visibility follows the setting.
-  const where: string[] = [`i.status='done'`, `j.private=false`];
+  const where: string[] = [`i.status='done'`, `j.private=false`, `i.deleted_at IS NULL`];
   const args: any[] = [];
   const add = (cond: string, val: any) => { args.push(val); where.push(cond.replace('?', `$${args.length}`)); };
   if (!isAdmin && !shared) add('j.created_by = ?', locals.user.uid);

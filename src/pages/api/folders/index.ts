@@ -7,7 +7,7 @@ const json = (b: unknown, s = 200) =>
 
 export const GET: APIRoute = async ({ locals }) => {
   if (!locals.user) return new Response('Unauthorized', { status: 401 });
-  const rows = await query(`SELECT f.*, (SELECT count(*) FROM items WHERE folder_id=f.id)::int AS count
+  const rows = await query(`SELECT f.*, (SELECT count(*) FROM items WHERE folder_id=f.id AND deleted_at IS NULL)::int AS count
                             FROM folders f ORDER BY f.name`);
   return json({ folders: rows });
 };

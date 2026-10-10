@@ -64,7 +64,7 @@ export async function backupAll(): Promise<{ items: number; mirrored: number; fa
   const dests = await backupDestinations();
   if (!dests.length) return { items: 0, mirrored: 0, failed: 0 };
   const rows = await query<{ id: string }>(
-    `SELECT id FROM items WHERE status='done' AND result_path IS NOT NULL ORDER BY created_at`);
+    `SELECT id FROM items WHERE status='done' AND result_path IS NOT NULL AND deleted_at IS NULL ORDER BY created_at`);
   let mirrored = 0, failed = 0;
   for (const it of rows) { const r = await backupItem(it.id); mirrored += r.mirrored; failed += r.failed; }
   return { items: rows.length, mirrored, failed };

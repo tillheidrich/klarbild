@@ -138,6 +138,9 @@ export function startMaintenance(): void {
         const r = await runRetention(s.retention_days);
         if (r.deleted) console.log(`[maintenance] Retention: ${r.deleted} old items removed.`);
       }
+      const { purgeExpiredTrash } = await import('./trash');
+      const tr = await purgeExpiredTrash();
+      if (tr) console.log(`[maintenance] Trash: ${tr} images removed for good.`);
       const p = await purgePrivate(60);
       if (p.deleted) console.log(`[maintenance] Private: ${p.deleted} results forgotten.`);
       const t = await purgeTracking(90);

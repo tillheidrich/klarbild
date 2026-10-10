@@ -30,8 +30,16 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
   const [tagMenu, setTagMenu] = useState<string | null>(null);
   const [share, setShare] = useState<ShareTarget | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
-  const notify = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
+  const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(null);
+  const toastTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  // With an undo button the toast stays longer — long enough to notice the slip.
+  const notify = (msg: string, undo?: () => void) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ msg, undo });
+    toastTimer.current = setTimeout(() => setToast(null), undo ? 7000 : 2400);
+  };
+  const [trashView, setTrashView] = useState(false);
+  const [trash, setTrash] = useState<{ days: number; items: (Item & { deleted_at: string; days_left: number })[] }>({ days: 30, items: [] });
 
   // Model name: the admin label, otherwise the readable tail of the model ID.
   const modelName = (id: string | null) => {
@@ -42,12 +50,14 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
   };
 
   const load = useCallback(async () => {
-    const [i, f, m] = await Promise.all([
+    const [i, f, m, tr] = await Promise.all([
       fetch('/api/items').then((r) => r.json()).catch(() => ({ items: [] })),
       fetch('/api/folders').then((r) => r.json()).catch(() => ({ folders: [] })),
       fetch('/api/models').then((r) => r.json()).catch(() => ({ models: [] })),
+      fetch('/api/trash').then((r) => r.json()).catch(() => ({ days: 30, items: [] })),
     ]);
     setItems(i.items || []); setFolders(f.folders || []); setModels(m.models || []);
+    setTrash({ days: tr.days ?? 30, items: tr.items || [] });
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -62,8 +72,30 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
     await fetch(`/api/items/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ folder_id }) });
     load();
   };
-  const del = async (id: string) => { await fetch(`/api/items/${id}`, { method: 'DELETE' }); setItems((x) => x.filter((y) => y.id !== id)); };
-  const delSelected = async () => { for (const id of pick) await fetch(`/api/items/${id}`, { method: 'DELETE' }); setPick(new Set()); load(); notify(t('Deleted.')); };
+  const trashAction = (action: 'trash' | 'restore' | 'purge', ids: string[]) =>
+    fetch('/api/trash', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ids }) })
+      .then((r) => r.json()).catch(() => ({ ids: [] }));
+  // Deleting moves into the trash; the toast offers to take it back right there.
+  const del = async (ids: string[]) => {
+    if (!ids.length) return;
+    setItems((x) => x.filter((y) => !ids.includes(y.id)));
+    const r = await trashAction('trash', ids);
+    setPick(new Set()); load();
+    const n = (r.ids || []).length;
+    if (trash.days === 0) { notify(n === 1 ? t('Deleted.') : t('{n} deleted.', { n })); return; }
+    notify(n === 1 ? t('Moved to the trash.') : t('{n} moved to the trash.', { n }),
+      async () => { await trashAction('restore', r.ids || []); setToast(null); load(); });
+  };
+  const delSelected = () => del([...pick]);
+  const restore = async (ids: string[]) => { await trashAction('restore', ids); load(); notify(t('Restored.')); };
+  const purge = async (ids: string[]) => {
+    if (!confirm(ids.length === 1 ? t('Delete this image for good? This cannot be undone.') : t('Delete {n} images for good? This cannot be undone.', { n: ids.length }))) return;
+    await trashAction('purge', ids); load(); notify(t('Deleted for good.'));
+  };
+  const emptyTrash = async () => {
+    if (!confirm(t('Empty the trash? {n} images will be deleted for good.', { n: trash.items.length }))) return;
+    await fetch('/api/trash', { method: 'DELETE' }); load(); notify(t('Trash emptied.'));
+  };
   const deliverSelected = async () => {
     notify(t('Sending to the delivery target …'));
     const r = await fetch('/api/deliver', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ itemIds: [...pick] }) }).then((x) => x.json());
@@ -131,9 +163,10 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
   return (
     <div>
       <div className="head-row">
-        <span className="mono-label">{t('Library')}{filtered.length ? ` · ${filtered.length}` : ''}</span>
+        <span className="mono-label">{trashView ? t('Trash · {n}', { n: trash.items.length })
+          : <>{t('Library')}{filtered.length ? ` · ${filtered.length}` : ''}</>}</span>
         <div className="row">
-          {pick.size > 0 && <>
+          {pick.size > 0 && !trashView && <>
             <span className="hint">{t('{n} selected', { n: pick.size })}</span>
             <button className="mini strong" onClick={deliverSelected}>{t('Deliver')}</button>
             <button className="mini" onClick={() => setShare({ itemIds: [...pick] })}>{t('Share')}</button>
@@ -145,9 +178,42 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
             </select>
             <button className="mini" onClick={delSelected}>{t('Delete')}</button>
           </>}
-          <button className="mini" onClick={newFolder}>{t('New folder')}</button>
+          {!trashView && <button className="mini" onClick={newFolder}>{t('New folder')}</button>}
+          {(trash.items.length > 0 || trashView) && (
+            <button className={`mini ${trashView ? 'strong' : ''}`} onClick={() => setTrashView(!trashView)}>
+              {trashView ? t('Back to the library') : t('Trash · {n}', { n: trash.items.length })}</button>
+          )}
         </div>
       </div>
+
+      {trashView ? (
+        <div className="trash">
+          <div className="hint notice">{trash.days > 0
+            ? t('Deleted images stay here for {days} days and can be restored until then. They are hidden from the library, from every share link and from every delivery.', { days: trash.days })
+            : t('The trash is switched off — deleting is final.')}</div>
+          {trash.items.length === 0 ? (
+            <div className="empty"><span className="regmark" /><h3>{t('The trash is empty')}</h3></div>
+          ) : (<>
+            <div className="row" style={{ marginBottom: 12 }}>
+              <button className="mini" onClick={() => restore(trash.items.map((x) => x.id))}>{t('Restore all')}</button>
+              <button className="mini danger" onClick={emptyTrash}>{t('Empty the trash')}</button>
+            </div>
+            <div className="gallery">
+              {trash.items.map((v) => (
+                <article key={v.id} className="tile trashed">
+                  <div className="tile-image"><img src={`/api/items/${v.id}/file?thumb=1`} alt="" loading="lazy" /></div>
+                  <div className="name static">{v.filename || '—'}</div>
+                  <div className="meta">{v.days_left === 0 ? t('Removed at the next cleanup') : v.days_left === 1 ? t('1 day left') : t('{n} days left', { n: v.days_left })}</div>
+                  <div className="row tight">
+                    <button className="mini strong2" onClick={() => restore([v.id])}>{t('Restore')}</button>
+                    <button className="mini" onClick={() => purge([v.id])}>{t('Delete for good')}</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>)}
+        </div>
+      ) : (<>
 
       {/* Folder filter */}
       <div className="folderbar">
@@ -238,13 +304,15 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
                     <option value="">{t('No folder')}</option>
                     {folders.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                   </select>
-                  <button className="mini" onClick={() => del(v.id)}>✕</button>
+                  <button className="mini" onClick={() => del([v.id])} title={t('Move to the trash')}>✕</button>
                 </div>
               </article>
             );
           })}
         </div>
       )}
+
+      </>)}
 
       {share && (
         <ShareDialog target={share} onClose={() => setShare(null)} locale={locale} dict={dict} />
@@ -286,7 +354,8 @@ export default function LibraryApp({ locale, dict }: { locale?: Locale; dict?: D
           </div>
         </div>
       )}
-      {toast && <div className="toast">{toast}</div>}
+      {toast && <div className="toast" role="status">{toast.msg}
+        {toast.undo && <button className="toast-undo" onClick={toast.undo}>{t('Undo')}</button>}</div>}
       <LibStyles />
     </div>
   );
@@ -359,6 +428,10 @@ function LibStyles() {
     .promptbox{background:var(--card);border-radius:var(--radius);max-width:min(92vw,620px);width:100%;padding:16px;display:flex;flex-direction:column;gap:10px;}
     .pb-head{display:flex;justify-content:space-between;align-items:center;gap:10px;}
     .pb-text{white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono);font-size:12.5px;line-height:1.5;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px;max-height:50vh;overflow:auto;margin:0;}
-    .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#FBFBF7;padding:10px 18px;border-radius:3px;font-size:13.5px;z-index:60;}
+    .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#FBFBF7;padding:10px 18px;border-radius:3px;font-size:13.5px;z-index:60;display:flex;align-items:center;gap:14px;}
+    .toast-undo{background:none;border:1px solid rgba(251,251,247,.5);color:#FBFBF7;border-radius:3px;padding:4px 10px;font-family:inherit;font-size:12.5px;cursor:pointer;}
+    .mini.danger{border-color:var(--err);color:var(--err);}
+    .tile.trashed .tile-image img{opacity:.6;filter:grayscale(.6);}
+    .name.static{font-family:var(--font-mono);font-size:12px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   `}</style>;
 }

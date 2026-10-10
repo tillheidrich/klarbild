@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { one } from '../../../../lib/db';
 import { getObject, putObject, sourceKey } from '../../../../lib/storage';
+import { loadItemFor } from '../../../../lib/itemaccess';
 
 export const prerender = false;
 const json = (b: unknown, s = 200) =>
@@ -11,6 +12,7 @@ const json = (b: unknown, s = 200) =>
  *  the studio as a starting point. */
 export const POST: APIRoute = async ({ params, locals }) => {
   if (!locals.user) return new Response('Unauthorized', { status: 401 });
+  if (!(await loadItemFor(locals.user, params.id!, 'read'))) return json({ error: 'There is no result.' }, 404);
   const it = await one<{ result_path: string | null; filename: string | null }>(
     'SELECT result_path, filename FROM items WHERE id=$1', [params.id]);
   if (!it?.result_path) return json({ error: 'There is no result.' }, 404);

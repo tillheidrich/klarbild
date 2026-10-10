@@ -37,7 +37,7 @@ export async function loadSourceNamed(src: PrintSource, user: SessionUser): Prom
   if (src.kind === 'item') {
     const item = await one<any>(
       `SELECT i.result_path, i.filename, j.created_by, j.private
-         FROM items i JOIN jobs j ON j.id = i.job_id WHERE i.id = $1`, [src.id]);
+         FROM items i JOIN jobs j ON j.id = i.job_id WHERE i.id = $1 AND i.deleted_at IS NULL`, [src.id]);
     if (!item?.result_path) throw new Error('Image not found.');
     const isAdmin = user.role === 'admin';
     const own = item.created_by === user.uid;

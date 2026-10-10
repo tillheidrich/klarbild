@@ -37,15 +37,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const isAdmin = locals.user.role === 'admin';
   // One query instead of one per image: with 500 images that was 500 round trips.
-  const found = await query<{ id: string; status: string; result_path: string | null; created_by: string | null; private: boolean; library_visibility: string }>(
-    `SELECT i.id, i.status, i.result_path, j.created_by, j.private,
+  const found = await query<{ id: string; status: string; result_path: string | null; deleted_at: string | null; created_by: string | null; private: boolean; library_visibility: string }>(
+    `SELECT i.id, i.status, i.result_path, i.deleted_at, j.created_by, j.private,
             (SELECT library_visibility FROM settings WHERE id=1) AS library_visibility
        FROM items i JOIN jobs j ON j.id = i.job_id
       WHERE i.id = ANY($1::uuid[])`, [ids]);
   if (found.length !== ids.length) return json({ error: 'One of the images is no longer available.' }, 404);
 
   for (const it of found) {
-    if (!it.result_path || it.status !== 'done') return json({ error: 'One of the images is no longer available.' }, 404);
+    if (!it.result_path || it.status !== 'done' || it.deleted_at) return json({ error: 'One of the images is no longer available.' }, 404);
     // Private jobs are deliberately never shared — the whole point is that they
     // leave no trace.
     if (it.private) return json({ error: 'Images from private sessions cannot be shared.' }, 403);

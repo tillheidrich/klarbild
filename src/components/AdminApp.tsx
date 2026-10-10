@@ -88,6 +88,7 @@ export default function AdminApp({ locale, dict }: { locale?: Locale; dict?: Dic
       output_ext: s.output_ext || 'png',
       cricut_sheet_cm: s.cricut_sheet_cm, monthly_budget: s.monthly_budget, n8n_webhook_url: s.n8n_webhook_url,
       keep_sources: !!s.keep_sources, make_thumbnails: s.make_thumbnails !== false, retention_days: s.retention_days,
+      trash_days: s.trash_days ?? 30,
       delivery_metadata_sidecar: !!s.delivery_metadata_sidecar, mirror_metadata_sidecar: !!s.mirror_metadata_sidecar,
       library_visibility: s.library_visibility || 'own', anonymous_generations: !!s.anonymous_generations,
       private_allowed: !!s.private_allowed, allow_nsfw: !!s.allow_nsfw,
@@ -337,6 +338,9 @@ export default function AdminApp({ locale, dict }: { locale?: Locale; dict?: Dic
           <div className="field"><label>{t('Retention (days)')}</label>
             <input className="input" type="number" min={0} placeholder={t('empty = unlimited')} value={s.retention_days ?? ''} onChange={(e) => field('retention_days', e.target.value)} />
             <div className="hint">{t('Older images are removed automatically (daily). Empty = delete nothing.')}</div></div>
+          <div className="field"><label>{t('Trash (days)')}</label>
+            <input className="input" type="number" min={0} max={3650} value={s.trash_days ?? 30} onChange={(e) => field('trash_days', e.target.value)} />
+            <div className="hint">{t('Deleted images wait this long in the trash and can be restored until then. 0 = no trash, a delete is final.')}</div></div>
           <div className="row">
             <button className="mini" onClick={() => storageAction('purge_sources', t('Delete the source images of all finished items? Results are kept.'))}>{t('Delete sources now')}</button>
             <button className="mini" onClick={() => storageAction('rebuild_thumbs')}>{t('Generate missing preview images')}</button>

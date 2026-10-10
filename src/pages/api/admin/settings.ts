@@ -42,6 +42,7 @@ export const GET: APIRoute = async () => {
     smtp_effective: mail ? { host: mail.cfg.host, port: mail.cfg.port, user: mail.cfg.user, from: mail.cfg.from } : null,
     // Sharing
     share_default_days: s.share_default_days,
+    trash_days: s.trash_days,
   } });
 };
 
@@ -64,9 +65,16 @@ export const PATCH: APIRoute = async ({ request }) => {
     'delivery_metadata_sidecar', 'mirror_metadata_sidecar', 'output_ext',
     'library_visibility', 'anonymous_generations', 'private_allowed', 'allow_nsfw',
     'mirror_enabled', 'mirror_host', 'mirror_protocol', 'mirror_port', 'mirror_user', 'mirror_base_path',
-    'smtp_host', 'smtp_port', 'smtp_secure', 'smtp_user', 'smtp_from', 'share_default_days']) {
+    'smtp_host', 'smtp_port', 'smtp_secure', 'smtp_user', 'smtp_from', 'share_default_days', 'trash_days']) {
     if (col in b) {
       const raw = b[col];
+      if (col === 'trash_days') {
+        // NOT NULL in the database: empty means the default, anything else a whole number of days.
+        const n = raw === '' || raw == null ? 30 : Math.round(Number(raw));
+        if (!Number.isFinite(n) || n < 0 || n > 3650) return json({ error: 'Trash: 0 to 3650 days.' }, 400);
+        set(col, n);
+        continue;
+      }
       const val = boolCols.includes(col) ? !!raw : (raw === '' ? null : raw);
       set(col, val);
     }

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
-import { one, query } from '../../../lib/db';
-import { deleteObject } from '../../../lib/storage';
+import { one } from '../../../lib/db';
+import { loadItemFor } from '../../../lib/itemaccess';
+import { trashItems, purgeItems } from '../../../lib/trash';
 
 export const prerender = false;
 const json = (b: unknown, s = 200) =>
@@ -8,7 +9,8 @@ const json = (b: unknown, s = 200) =>
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   if (!locals.user) return new Response('Unauthorized', { status: 401 });
-  const b = await request.json();
+  if (!(await loadItemFor(locals.user, params.id!, 'write'))) return json({ error: 'Not found.' }, 404);
+  const b = await request.json().catch(() => ({} as any));
   const sets: string[] = []; const args: any[] = [];
   if (typeof b.filename === 'string') { args.push(b.filename.trim()); sets.push(`filename=$${args.length}`); }
   if ('folder_id' in b) { args.push(b.folder_id || null); sets.push(`folder_id=$${args.length}`); }
@@ -22,10 +24,20 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   return json({ item: row });
 };
 
-export const DELETE: APIRoute = async ({ params, locals }) => {
+/**
+ * Moves the image into the trash. `?purge=1` removes an image that is already in
+ * the trash for good. With the trash switched off (trash_days = 0) a delete is
+ * final straight away, as it used to be.
+ */
+export const DELETE: APIRoute = async ({ params, url, locals }) => {
   if (!locals.user) return new Response('Unauthorized', { status: 401 });
-  const it = await one<{ result_path: string | null }>('SELECT result_path FROM items WHERE id=$1', [params.id]);
-  if (it?.result_path) await deleteObject(it.result_path).catch(() => {});
-  await query('DELETE FROM items WHERE id=$1', [params.id]);
-  return json({ ok: true });
+  const purge = url.searchParams.get('purge') === '1';
+  const it = await loadItemFor(locals.user, params.id!, 'write', { includeTrashed: purge });
+  if (!it) return json({ error: 'Not found.' }, 404);
+  if (purge) {
+    const gone = await purgeItems(locals.user, [it.id]);
+    return json({ ok: gone.length === 1, purged: gone.length });
+  }
+  const moved = await trashItems(locals.user, [it.id]);
+  return json({ ok: moved.length === 1, trashed: moved.length });
 };

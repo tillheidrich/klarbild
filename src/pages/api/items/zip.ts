@@ -13,8 +13,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const ids: string[] = b.itemIds || [];
   if (!ids.length) return new Response('Nothing selected.', { status: 400 });
 
+  // Only images this account may see, and none from the trash. Before, any id
+  // from any account went into the archive.
   const rows = await query<{ id: string; result_path: string | null; filename: string | null }>(
-    `SELECT id, result_path, filename FROM items WHERE id = ANY($1) AND result_path IS NOT NULL`, [ids]);
+    `SELECT i.id, i.result_path, i.filename FROM items i JOIN jobs j ON j.id = i.job_id
+      WHERE i.id = ANY($1::uuid[]) AND i.result_path IS NOT NULL AND i.deleted_at IS NULL
+        AND ($3::boolean OR j.created_by = $2
+             OR (NOT j.private AND (SELECT library_visibility FROM settings WHERE id=1) = 'shared'))`,
+    [ids.filter((x) => /^[0-9a-f-]{36}$/i.test(String(x))), locals.user.uid, locals.user.role === 'admin']);
   if (!rows.length) return new Response('No results.', { status: 404 });
 
   const archive = new ZipArchive({ zlib: { level: 6 } });
