@@ -110,8 +110,8 @@ function shrink(dataUrl: string, maxEdge = 700): Promise<{ url: string; w: numbe
 
 /* ========================================================================== */
 
-export default function PrintApp({ locale, dict, canDeliver = false }:
-  { locale?: Locale; dict?: Dict | null; canDeliver?: boolean }) {
+export default function PrintApp({ locale, dict, canDeliver = false, hasLibrary = true }:
+  { locale?: Locale; dict?: Dict | null; canDeliver?: boolean; hasLibrary?: boolean }) {
   const t = useT(dict);
   const [cells, setCells] = useState<Cell[]>([]);
   const [paperId, setPaperId] = useState('A4');
@@ -335,6 +335,17 @@ export default function PrintApp({ locale, dict, canDeliver = false }:
     } catch { notify(t('These settings could not be applied.'), true); }
   };
 
+  // A photo to try it with, for the first visit — before anyone has picked a
+  // picture of their own. It goes through the normal upload, so what follows is
+  // exactly what happens with a real image. (An original illustration made for
+  // Klarbild; public/samples/README.md says so.)
+  const addSample = async () => {
+    try {
+      const blob = await fetch('/samples/lake-at-dusk.jpg').then((r) => { if (!r.ok) throw new Error(); return r.blob(); });
+      await addFiles([new File([blob], 'lake-at-dusk.jpg', { type: 'image/jpeg' })]);
+    } catch { notify(t('The sample photo could not be loaded.')); }
+  };
+
   const addFromLibrary = (it: any) => {
     const [w, h] = String(it.output_px || '').split(/[x×]/).map((n: string) => parseInt(n, 10) || 0);
     const id = uid();
@@ -500,7 +511,7 @@ export default function PrintApp({ locale, dict, canDeliver = false }:
         <div className="col work-left">
           <Card nr="1" title={t('Images')} actions={
             <>
-              <button className="link" onClick={() => setPicker(true)}>{t('From the library')}</button>
+              {hasLibrary && <button className="link" onClick={() => setPicker(true)}>{t('From the library')}</button>}
               {cells.length > 0 && (
                 <button className="link danger"
                   onClick={() => { if (confirm(t('Remove {images}?',
@@ -528,10 +539,20 @@ export default function PrintApp({ locale, dict, canDeliver = false }:
                       already in Klarbild and need not be exported and uploaded
                       again first. */}
                   <div className="or"><span>{t('or')}</span></div>
-                  <button type="button" className="drop drop-lib" onClick={() => setPicker(true)}>
-                    <span className="drop-title">{t('Pick from the library')}</span>
-                    <span className="drop-hint">{t('Everything Klarbild has already made — with search, by folder, and several at once')}</span>
-                  </button>
+                  {hasLibrary ? (
+                    <button type="button" className="drop drop-lib" onClick={() => setPicker(true)}>
+                      <span className="drop-title">{t('Pick from the library')}</span>
+                      <span className="drop-hint">{t('Everything Klarbild has already made — with search, by folder, and several at once')}</span>
+                    </button>
+                  ) : (
+                    // Print-only instance: there is no library to pick from. The
+                    // second way in is a sample, so the first visit ends in a
+                    // sheet and not in an empty box.
+                    <button type="button" className="drop drop-lib" onClick={addSample}>
+                      <span className="drop-title">{t('Try it with a sample photo')}</span>
+                      <span className="drop-hint">{t('No picture at hand? Take ours, pick a preset below and make the PDF.')}</span>
+                    </button>
+                  )}
                   {presets.length > 0 && (
                     <div className="quickstart">
                       <span className="mono-label">{t('Or start from a preset')}</span>
@@ -559,7 +580,7 @@ export default function PrintApp({ locale, dict, canDeliver = false }:
                   ))}
                   <div className="cell-add-group">
                     <button className="cell-add" onClick={() => fileRef.current?.click()}>{t('＋ Upload')}</button>
-                    <button className="cell-add" onClick={() => setPicker(true)}>{t('＋ From the library')}</button>
+                    {hasLibrary && <button className="cell-add" onClick={() => setPicker(true)}>{t('＋ From the library')}</button>}
                   </div>
                 </div>
               )}
