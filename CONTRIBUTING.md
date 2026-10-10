@@ -16,7 +16,7 @@ You need a PostgreSQL to point `DATABASE_URL` at; `docker compose up db` gives y
 one. Migrations run themselves on the first request.
 
 ```bash
-npm test          # 124 tests, no database needed
+npm test          # 130 tests, no database needed
 npx tsc --noEmit  # must be clean
 npm run build
 ```

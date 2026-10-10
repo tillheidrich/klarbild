@@ -14,6 +14,16 @@ const dict = dictFor(locale);
     <p class="lead">{t('What is new in Klarbild. Newest changes at the top.')}</p>
 
     <section>
+      <div class="ver"><span class="tag">{t('10 Oct 2026')}</span><h2>{t('1.1 — a trash, a sample photo, and an image you do not have to build')}</h2></div>
+      <ul>
+        <li set:html={t('<b>Deleting is no longer final on the spot.</b> ✕ moves an image into the trash, and for a few seconds the bottom of the screen offers <b>Undo</b>. Noticed later? The library shows a <b>Trash</b> button; everything in there can be restored for 30 days, then Klarbild clears it away by itself.')} />
+        <li set:html={t('While an image is in the trash it is gone from <b>share links</b> too — and comes back there when you restore it. An image deleted while it is still waiting in the queue is not generated at all, so it costs nothing.')} />
+        <li set:html={t('<b>Try it with a sample photo.</b> An instance with only the print studio used to offer “Pick from the library” — without having a library. Now that place holds a sample photo, so a first visit ends in a printed sheet.')} />
+        <li set:html={t('<b>Its own icon</b> in the browser tab and on the iPhone home screen.')} />
+      </ul>
+    </section>
+
+    <section>
       <div class="ver"><span class="tag">{t('1 Sep 2026')}</span><h2>{t('Print: images from the library, and what you printed last')}</h2></div>
       <ul>
         <li set:html={t('<b>Images from the library into the print area.</b> Until now you had to upload a file even when Klarbild had it already. The print area now offers <b>“Choose from the library”</b> — with search, by folder, and several at once.')} />

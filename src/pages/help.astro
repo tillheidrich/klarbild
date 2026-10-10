@@ -46,6 +46,7 @@ const dict = dictFor(locale);
         <li set:html={t('<b>Before/after</b>: shows the comparison source ↔ result (not available for images made from text alone).')} />
         <li set:html={t('<b>Manage folders</b>: tap the folder chip, then ✎ to rename it (including its folder on the target) or ✕ to delete it (the images are kept).')} />
         <li set:html={t('<b>Several at once</b>: select images, then <b>download them as a ZIP</b> or move them <b>into a folder</b> together.')} />
+        <li set:html={t('<b>Deleting</b> (✕) moves an image into the <b>trash</b>, with <b>Undo</b> right after. The trash (a button top right, once something is in it) keeps it for 30 days — and while it is there it appears in no share link and no delivery.')} />
       </ul>
       <p class="notice" set:html={t("<b>File names are unique.</b> Every result is called <code>YYYY-MM-DD_HHMMSS_subject_format_shortid</code>, for example <code>2026-08-20_143207_ada-badge_the-frame_a3f9.jpg</code>. Because date and time come first, every file listing — the delivery target, the backup mirror, the file manager — sorts chronologically by itself. The short id at the end comes from the image's id: <b>two images can no longer overwrite each other on delivery</b>, even if you generate the same subject in the same format twice on one day. (Before 21 Aug 2026 that was different — the first image was lost in such a case. Under <b>Admin → File names</b> the existing library can be renamed after the fact.)")} />
     </section>

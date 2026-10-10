@@ -1,6 +1,6 @@
 {
   "name": "klarbild",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Self-hosted print studio: put pictures on paper at exactly the size you asked for. Sheet layout with crop marks, tiling, 1:1 PDF. Optional AI, delivery, sharing and Telegram modules.",
   "license": "AGPL-3.0-only",
   "author": "Till Heidrich",

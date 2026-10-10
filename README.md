@@ -21,11 +21,17 @@ page runs this repository's own layout engine client-side and hands you the PDF.
 nothing uploaded.
 
 ```bash
-git clone https://github.com/tillheidrich/klarbild.git && cd klarbild
-cp .env.example .env          # four values at the top; the file says which
+mkdir klarbild && cd klarbild
+curl -fsSLO https://raw.githubusercontent.com/tillheidrich/klarbild/main/docker-compose.yaml
+curl -fsSL  https://raw.githubusercontent.com/tillheidrich/klarbild/main/.env.example -o .env
+nano .env                     # four values at the top; the file says which
 docker compose up -d
 docker compose logs app       # your admin password is printed here, once
 ```
+
+No clone, no build: the compose file pulls a prebuilt image for amd64 and arm64
+(a Raspberry Pi 4 or 5 runs it). Open `http://localhost:4321`, sign in, and press
+**Try it with a sample photo** if you have no picture at hand.
 
 ![Klarbild's print studio: eight passport photos laid out on one A4 sheet with corner marks](docs/screenshots/print-studio.png)
 
@@ -75,7 +81,7 @@ of the PDF above measures 210.00 × 297.00 mm, because that is what A4 is.
 | Module | What it adds | What it needs |
 |---|---|---|
 | `print` | everything above | nothing — always on |
-| `ai` | clean up screenshots, convert, combine, generate | a key for an images API (paid per image) |
+| `ai` | clean up screenshots, convert, combine, generate — plus the library, with folders, flags and a 30-day trash | a key for an images API (paid per image) |
 | `delivery` | push finished files to an SFTP/FTPS server you already have | that server |
 | `mirror` | a second copy of every result, sorted by month | a second target |
 | `share` | public links: expiring, revocable, optional passphrase, ZIP download | a public URL |
@@ -119,12 +125,12 @@ visitor per hour, deleted after 90 days.
 
 ## Stack and shape
 
-Astro 5 (SSR, Node standalone) with React islands · PostgreSQL · `sharp` ·
+Astro 7 (SSR, Node standalone) with React islands · PostgreSQL · `sharp` ·
 `pdf-lib` · `pg-boss` · OKLCH design tokens, no Tailwind. Files go to a volume by
 default; S3/MinIO is available but not required.
 
-About 13,700 lines across 117 files, 124 tests, 16 forward-only idempotent
-migrations that run themselves on boot. English and German interface — 1,067
+About 13,800 lines across 115 files, 130 tests, 17 forward-only idempotent
+migrations that run themselves on boot. English and German interface — 1,095
 entries, covering every translatable string in the source. The English sentence is
 the translation key, so there is no key file to keep in sync and a missing entry
 degrades to readable English rather than to `print.sheet.title`.
@@ -135,6 +141,17 @@ degrades to readable English rather than to `print.sheet.title`.
 and Postgres, files on a volume. `docker-compose.full.yaml` adds MinIO and turns
 every module on. Both read their secrets from `.env` and refuse to start rather than
 boot with a default password.
+
+Both pull `ghcr.io/tillheidrich/klarbild:1`, which follows every 1.x release.
+Updating is
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+and the migrations run themselves on the next boot. The container runs as uid
+1000, not root. Prefer to build the image yourself? Swap the `image:` line in the
+compose file for `build: .` and run it from a clone.
 
 **From source.**
 
