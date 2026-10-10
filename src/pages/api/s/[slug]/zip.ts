@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { Readable } from 'node:stream';
 import { once } from 'node:events';
 import { query } from '../../../../lib/db';
@@ -66,7 +66,7 @@ export const GET: APIRoute = async ({ params, request, clientAddress }) => {
     [images.map((b) => b.id)]);
   const byId = new Map(paths.map((p) => [p.id, p]));
 
-  const archive = archiver('zip', { zlib: { level: 6 } });
+  const archive = new ZipArchive({ zlib: { level: 6 } });
   // Errors must not take the process with them; the stream then breaks off.
   archive.on('error', (e: any) => console.error('[share/zip]', e?.message || e));
   archive.on('warning', (e: any) => console.error('[share/zip] warning:', e?.message || e));

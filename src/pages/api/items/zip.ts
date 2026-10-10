@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { buildSelectionZipName } from '../../../lib/naming';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { query } from '../../../lib/db';
 import { getObject } from '../../../lib/storage';
 
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     `SELECT id, result_path, filename FROM items WHERE id = ANY($1) AND result_path IS NOT NULL`, [ids]);
   if (!rows.length) return new Response('No results.', { status: 404 });
 
-  const archive = archiver('zip', { zlib: { level: 6 } });
+  const archive = new ZipArchive({ zlib: { level: 6 } });
   const seen: Record<string, number> = {};
   for (const r of rows) {
     try {
