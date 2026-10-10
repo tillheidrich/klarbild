@@ -5,3 +5,8 @@ dist
 *.log
 .env
 # Do NOT ignore migrations/ — they are read at runtime, on every boot.
+docs
+tests
+.github
+*.md
+!README.md

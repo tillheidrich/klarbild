@@ -9,9 +9,11 @@
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # The prebuilt image (amd64 and arm64). `:1` follows every 1.x release, so
+    # `docker compose pull && docker compose up -d` is the whole update.
+    image: ghcr.io/tillheidrich/klarbild:${KLARBILD_VERSION:-1}
+    # Rather build it yourself from this checkout? Swap the line above for:
+    # build: .
     environment:
       PORT: "4321"
       DATABASE_URL: "postgres://klarbild:${DB_PASSWORD:?set DB_PASSWORD in .env}@db:5432/klarbild"
